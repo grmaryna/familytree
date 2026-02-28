@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/grmaryna/familytree/issues"
   },
-  "homepage": "https://github.com/grmaryna/familytree#readme"
+  "homepage": "https://github.com/grmaryna/familytree#readme",
+  "dependencies": {
+    "color-library": "file:../color-library"
+  }
 }
