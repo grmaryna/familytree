@@ -86,7 +86,95 @@ peek(): Entry<T> | undefined {
  
   private _sinkDown(i: number): void {
     const n = this.heap.length;
-    
+    while (true) {
+      let best = i;
+      const l = 2 * i + 1;
+      const r = 2 * i + 2;
+      if (l < n && this.cmp(this.heap[l], this.heap[best]) < 0) best = l;
+      if (r < n && this.cmp(this.heap[r], this.heap[best]) < 0) best = r;
+      if (best === i) break;
+      [this.heap[i], this.heap[best]] = [this.heap[best], this.heap[i]];
+      i = best;
+    }
   }
 }
  
+export class BiDirectionalPriorityQueue<T> {
+  private readonly heaps: Record<AccessMode, BinaryHeap<T>>;
+  private readonly live = new Set<number>(); // active insertionOrders
+  private counter = 0;
+ 
+  constructor() {
+    this.heaps = {
+      highest: new BinaryHeap(byHighestPriority),
+      lowest: new BinaryHeap(byLowestPriority),
+      oldest: new BinaryHeap(byOldest),
+      newest: new BinaryHeap(byNewest),
+    };
+  }
+ 
+  get size(): number {
+    return this.live.size;
+  }
+ 
+  get isEmpty(): boolean {
+    return this.live.size === 0;
+  }
+ 
+  enqueue(item: T, priority: number): void {
+    const entry: Entry<T> = {
+      item,
+      priority,
+      insertionOrder: this.counter++,
+    };
+    this.live.add(entry.insertionOrder);
+    for (const heap of Object.values(this.heaps)) {
+      heap.push(entry);
+    }
+  }
+ 
+  dequeue(mode: AccessMode): T | undefined {
+    return this._extract(mode, true);
+  }
+
+  peek(mode: AccessMode): T | undefined {
+    return this._extract(mode, false);
+  }
+ 
+  clear(): void {
+    this.live.clear();
+    for (const heap of Object.values(this.heaps)) {
+      (heap as any).heap = []; // reset internal array
+    }
+  }
+ 
+  toArray(mode: AccessMode): T[] {
+    const cmpFn: Record<AccessMode, Comparator<T>> = {
+      highest: byHighestPriority,
+      lowest: byLowestPriority,
+      oldest: byOldest,
+      newest: byNewest,
+    };
+    return this.heaps[mode]
+      .toSortedArray()
+      .filter((e) => this.live.has(e.insertionOrder))
+      .sort(cmpFn[mode])
+      .map((e) => e.item);
+  }
+ 
+  private _extract(mode: AccessMode, remove: boolean): T | undefined {
+    const heap = this.heaps[mode];
+ 
+    while (heap.size > 0 && !this.live.has(heap.peek()!.insertionOrder)) {
+      heap.pop();
+    }
+ 
+    if (heap.size === 0) return undefined;
+ 
+    if (!remove) return heap.peek()!.item;
+ 
+    const entry = heap.pop()!;
+    this.live.delete(entry.insertionOrder);
+    return entry.item;
+  }
+}
