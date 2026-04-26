@@ -112,13 +112,7 @@ export class FamilyTreeTaskScheduler {
 
   private async _tick(): Promise<void> {
     while (!this.queue.isEmpty) {
-      const next = this.queue.peek("highest");
-      const mode: AccessMode =
-        next?.type === "undoAction" || next?.type === "redoAction"
-          ? "newest"
-          : "highest";
-
-      const task = this.queue.dequeue(mode);
+      const task = this.queue.dequeue("highest");
       if (!task) break;
 
       try {
