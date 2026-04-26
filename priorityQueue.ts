@@ -1,5 +1,5 @@
 
- export type AccessMode = "highest" | "lowest" | "oldest" | "newest";
+export type AccessMode = "highest" | "lowest" | "oldest" | "newest";
  
 interface Entry<T> {
   item: T;
@@ -99,7 +99,7 @@ peek(): Entry<T> | undefined {
   }
 }
  
-export class BiDirectionalPriorityQueue<T> {
+export class priorityQueue<T> {
   private readonly heaps: Record<AccessMode, BinaryHeap<T>>;
   private readonly live = new Set<number>(); // active insertionOrders
   private counter = 0;

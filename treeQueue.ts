@@ -1,7 +1,7 @@
 import {
-  BiDirectionalPriorityQueue,
+  priorityQueue,
   type AccessMode,
-} from "./priorityQueue.ts";
+} from "./priorityQueue";
 
 export const TaskPriority = {
   CRITICAL: 100,
@@ -26,31 +26,22 @@ export type TaskType =
 export interface FamilyTreeTask {
   id: string;
   type: TaskType;
-  label: string;           // human-readable description for the UI
+  label: string;
   priority: TaskPriorityLevel;
-  payload?: unknown;       // arbitrary data the handler needs
+  payload?: unknown;
   execute: () => Promise<void> | void;
 }
 
-// ─── Task Scheduler ───────────────────────────────────────────────────────────
-
 export class FamilyTreeTaskScheduler {
-  private readonly queue = new BiDirectionalPriorityQueue<FamilyTreeTask>();
+  private readonly queue = new priorityQueue<FamilyTreeTask>();
   private running = false;
   private processedCount = 0;
 
-  // ── Enqueue helpers ──────────────────────────────────────────────────────
-
-  /** Enqueue any task with an explicit priority level. */
   schedule(task: FamilyTreeTask): void {
     this.queue.enqueue(task, task.priority);
     if (!this.running) this._tick();
   }
 
-  /**
-   * Enqueue a "render node" task.
-   * Nodes currently visible on screen get HIGH priority; distant ancestors LOW.
-   */
   scheduleRender(
     personId: string,
     label: string,
@@ -66,10 +57,6 @@ export class FamilyTreeTaskScheduler {
     });
   }
 
-  /**
-   * Enqueue a save operation.
-   * Always HIGH priority — data loss risk if dropped.
-   */
   scheduleSave(personId: string, label: string, execute: () => Promise<void>): void {
     this.schedule({
       id: `save:${personId}`,
@@ -80,11 +67,6 @@ export class FamilyTreeTaskScheduler {
     });
   }
 
-  /**
-   * Enqueue an undo action.
-   * CRITICAL priority — must run before any subsequent write.
-   * Uses "newest" dequeue so the most recent undo is always processed first (LIFO).
-   */
   scheduleUndo(label: string, execute: () => void): void {
     this.schedule({
       id: `undo:${Date.now()}`,
@@ -95,44 +77,32 @@ export class FamilyTreeTaskScheduler {
     });
   }
 
-  // ── Introspection ────────────────────────────────────────────────────────
-
   get pendingCount(): number {
     return this.queue.size;
   }
 
-  /** Preview next task by a given mode without mutating the queue. */
   peekNext(mode: AccessMode = "highest"): FamilyTreeTask | undefined {
     return this.queue.peek(mode);
   }
 
-  /** All pending tasks sorted by the given mode. */
   listPending(mode: AccessMode = "highest"): FamilyTreeTask[] {
     return this.queue.toArray(mode);
   }
 
-  /** Drain the queue immediately (e.g. on page unload — flush all saves). */
   async flushAll(): Promise<void> {
     while (!this.queue.isEmpty) {
       const task = this.queue.dequeue("highest");
       if (task) {
-        try { await task.execute(); } catch { /* log in prod */ }
+        try { await task.execute(); } catch { }
         this.processedCount++;
       }
     }
   }
 
-  // ── Internal tick loop ───────────────────────────────────────────────────
-
-  /**
-   * Runs one task per animation frame so the browser stays responsive.
-   * Undo tasks use LIFO ("newest"); all others use priority ("highest").
-   */
   private async _tick(): Promise<void> {
     this.running = true;
 
     while (!this.queue.isEmpty) {
-      // Peek: if the top task is an undo, dequeue newest (LIFO); else highest.
       const next = this.queue.peek("highest");
       const mode: AccessMode =
         next?.type === "undoAction" || next?.type === "redoAction"
@@ -150,7 +120,6 @@ export class FamilyTreeTaskScheduler {
 
       this.processedCount++;
 
-      // Yield to the browser between tasks.
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     }
 
@@ -158,14 +127,9 @@ export class FamilyTreeTaskScheduler {
   }
 }
 
-// ─── Singleton export ─────────────────────────────────────────────────────────
-
 export const taskScheduler = new FamilyTreeTaskScheduler();
 
-// ─── Usage examples (dev-only) ────────────────────────────────────────────────
-
 if (import.meta.env?.DEV) {
-  // Render grandparent node (visible on screen)
   taskScheduler.scheduleRender(
     "person-001",
     "Render: Іван Шевченко",
@@ -173,7 +137,6 @@ if (import.meta.env?.DEV) {
     () => console.log("[render] Іван Шевченко")
   );
 
-  // Load a background photo (low priority)
   taskScheduler.schedule({
     id: "photo:person-042",
     type: "loadPhoto",
@@ -182,14 +145,12 @@ if (import.meta.env?.DEV) {
     execute: () => console.log("[photo] loading..."),
   });
 
-  // Save a newly added person (high priority)
   taskScheduler.scheduleSave(
     "person-099",
     "Save: Марія Бондаренко",
     async () => console.log("[save] Марія Бондаренко persisted")
   );
 
-  // Undo last deletion (critical, LIFO)
   taskScheduler.scheduleUndo(
     "Undo: delete Петро Гончаренко",
     () => console.log("[undo] restored Петро Гончаренко")
