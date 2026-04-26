@@ -1,7 +1,7 @@
 import {
-  priorityQueue,
+  BiDirectionalPriorityQueue,
   type AccessMode,
-} from "./priorityQueue";
+} from "./bidirectionalpriorityqueue";
 
 export const TaskPriority = {
   CRITICAL: 100,
@@ -11,7 +11,8 @@ export const TaskPriority = {
   BACKGROUND: 5,
 } as const;
 
-export type TaskPriorityLevel = (typeof TaskPriority)[keyof typeof TaskPriority];
+export type TaskPriorityLevel =
+  (typeof TaskPriority)[keyof typeof TaskPriority];
 
 export type TaskType =
   | "renderNode"
@@ -33,13 +34,17 @@ export interface FamilyTreeTask {
 }
 
 export class FamilyTreeTaskScheduler {
-  private readonly queue = new priorityQueue<FamilyTreeTask>();
+  private readonly queue =
+    new BiDirectionalPriorityQueue<FamilyTreeTask>();
   private running = false;
   private processedCount = 0;
 
   schedule(task: FamilyTreeTask): void {
     this.queue.enqueue(task, task.priority);
-    if (!this.running) this._tick();
+    if (!this.running) {
+      this.running = true;
+      this._tick();
+    }
   }
 
   scheduleRender(
@@ -57,7 +62,11 @@ export class FamilyTreeTaskScheduler {
     });
   }
 
-  scheduleSave(personId: string, label: string, execute: () => Promise<void>): void {
+  scheduleSave(
+    personId: string,
+    label: string,
+    execute: () => Promise<void>
+  ): void {
     this.schedule({
       id: `save:${personId}`,
       type: "savePerson",
@@ -93,15 +102,15 @@ export class FamilyTreeTaskScheduler {
     while (!this.queue.isEmpty) {
       const task = this.queue.dequeue("highest");
       if (task) {
-        try { await task.execute(); } catch { }
+        try {
+          await task.execute();
+        } catch {}
         this.processedCount++;
       }
     }
   }
 
   private async _tick(): Promise<void> {
-    this.running = true;
-
     while (!this.queue.isEmpty) {
       const next = this.queue.peek("highest");
       const mode: AccessMode =
@@ -115,12 +124,17 @@ export class FamilyTreeTaskScheduler {
       try {
         await task.execute();
       } catch (err) {
-        console.error(`[FamilyTreeQueue] Task "${task.label}" failed:`, err);
+        console.error(
+          `[FamilyTreeQueue] Task "${task.label}" failed:`,
+          err
+        );
       }
 
       this.processedCount++;
 
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      );
     }
 
     this.running = false;
@@ -129,7 +143,11 @@ export class FamilyTreeTaskScheduler {
 
 export const taskScheduler = new FamilyTreeTaskScheduler();
 
-if (import.meta.env?.DEV) {
+const isDev =
+  typeof process !== "undefined" &&
+  process.env?.NODE_ENV === "development";
+
+if (isDev) {
   taskScheduler.scheduleRender(
     "person-001",
     "Render: Іван Шевченко",
@@ -148,7 +166,8 @@ if (import.meta.env?.DEV) {
   taskScheduler.scheduleSave(
     "person-099",
     "Save: Марія Бондаренко",
-    async () => console.log("[save] Марія Бондаренко persisted")
+    async () =>
+      console.log("[save] Марія Бондаренко persisted")
   );
 
   taskScheduler.scheduleUndo(
@@ -158,6 +177,8 @@ if (import.meta.env?.DEV) {
 
   console.log(
     "[FamilyTreeQueue] pending tasks:",
-    taskScheduler.listPending("highest").map((t) => `${t.label} (p=${t.priority})`)
+    taskScheduler
+      .listPending("highest")
+      .map((t) => `${t.label} (p=${t.priority})`)
   );
 }

@@ -20,5 +20,8 @@
   "homepage": "https://github.com/grmaryna/familytree#readme",
   "dependencies": {
     "color-library": "file:../color-library"
+  },
+  "devDependencies": {
+    "vite": "^8.0.10"
   }
 }

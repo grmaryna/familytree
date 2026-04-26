@@ -1,6 +1,5 @@
-
 export type AccessMode = "highest" | "lowest" | "oldest" | "newest";
- 
+
 interface Entry<T> {
   item: T;
   priority: number;
@@ -8,40 +7,40 @@ interface Entry<T> {
 }
 
 type Comparator<T> = (a: Entry<T>, b: Entry<T>) => number;
- 
+
 function byHighestPriority<T>(a: Entry<T>, b: Entry<T>): number {
   return b.priority - a.priority || a.insertionOrder - b.insertionOrder;
 }
- 
+
 function byLowestPriority<T>(a: Entry<T>, b: Entry<T>): number {
   return a.priority - b.priority || a.insertionOrder - b.insertionOrder;
 }
- 
+
 function byOldest<T>(a: Entry<T>, b: Entry<T>): number {
   return a.insertionOrder - b.insertionOrder;
 }
- 
+
 function byNewest<T>(a: Entry<T>, b: Entry<T>): number {
   return b.insertionOrder - a.insertionOrder;
 }
- 
+
 class BinaryHeap<T> {
   private heap: Entry<T>[] = [];
   private readonly cmp: Comparator<T>;
- 
+
   constructor(cmp: Comparator<T>) {
     this.cmp = cmp;
   }
- 
+
   get size(): number {
     return this.heap.length;
   }
- 
+
   push(entry: Entry<T>): void {
     this.heap.push(entry);
     this._bubbleUp(this.heap.length - 1);
   }
- 
+
   pop(): Entry<T> | undefined {
     if (this.heap.length === 0) return undefined;
     const top = this.heap[0];
@@ -52,10 +51,11 @@ class BinaryHeap<T> {
     }
     return top;
   }
-peek(): Entry<T> | undefined {
+
+  peek(): Entry<T> | undefined {
     return this.heap[0];
   }
- 
+
   remove(insertionOrder: number): boolean {
     const idx = this.heap.findIndex(
       (e) => e.insertionOrder === insertionOrder
@@ -69,11 +69,15 @@ peek(): Entry<T> | undefined {
     }
     return true;
   }
- 
+
   toSortedArray(): Entry<T>[] {
     return [...this.heap].sort(this.cmp);
   }
- 
+
+  clear(): void {
+    this.heap = [];
+  }
+
   private _bubbleUp(i: number): void {
     while (i > 0) {
       const parent = Math.floor((i - 1) / 2);
@@ -83,7 +87,7 @@ peek(): Entry<T> | undefined {
       } else break;
     }
   }
- 
+
   private _sinkDown(i: number): void {
     const n = this.heap.length;
     while (true) {
@@ -98,12 +102,12 @@ peek(): Entry<T> | undefined {
     }
   }
 }
- 
-export class priorityQueue<T> {
+
+export class BiDirectionalPriorityQueue<T> {
   private readonly heaps: Record<AccessMode, BinaryHeap<T>>;
-  private readonly live = new Set<number>(); // active insertionOrders
+  private readonly live = new Set<number>();
   private counter = 0;
- 
+
   constructor() {
     this.heaps = {
       highest: new BinaryHeap(byHighestPriority),
@@ -112,15 +116,15 @@ export class priorityQueue<T> {
       newest: new BinaryHeap(byNewest),
     };
   }
- 
+
   get size(): number {
     return this.live.size;
   }
- 
+
   get isEmpty(): boolean {
     return this.live.size === 0;
   }
- 
+
   enqueue(item: T, priority: number): void {
     const entry: Entry<T> = {
       item,
@@ -132,7 +136,7 @@ export class priorityQueue<T> {
       heap.push(entry);
     }
   }
- 
+
   dequeue(mode: AccessMode): T | undefined {
     return this._extract(mode, true);
   }
@@ -140,14 +144,14 @@ export class priorityQueue<T> {
   peek(mode: AccessMode): T | undefined {
     return this._extract(mode, false);
   }
- 
+
   clear(): void {
     this.live.clear();
     for (const heap of Object.values(this.heaps)) {
-      (heap as any).heap = []; // reset internal array
+      heap.clear();
     }
   }
- 
+
   toArray(mode: AccessMode): T[] {
     const cmpFn: Record<AccessMode, Comparator<T>> = {
       highest: byHighestPriority,
@@ -161,18 +165,18 @@ export class priorityQueue<T> {
       .sort(cmpFn[mode])
       .map((e) => e.item);
   }
- 
+
   private _extract(mode: AccessMode, remove: boolean): T | undefined {
     const heap = this.heaps[mode];
- 
+
     while (heap.size > 0 && !this.live.has(heap.peek()!.insertionOrder)) {
       heap.pop();
     }
- 
+
     if (heap.size === 0) return undefined;
- 
+
     if (!remove) return heap.peek()!.item;
- 
+
     const entry = heap.pop()!;
     this.live.delete(entry.insertionOrder);
     return entry.item;
