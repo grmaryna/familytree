@@ -7,8 +7,7 @@ let people = [];
   let dragOffset = { x: 0, y: 0 };
   let canvasPan = null;
   let nextId = 1;
- 
-  // ========== HELPERS ==========
+
   const canvas = document.getElementById('canvas');
   const svgLines = document.getElementById('svgLines');
   const emptyHint = document.getElementById('emptyHint');
@@ -18,8 +17,7 @@ let people = [];
   }
  
   function getById(id) { return people.find(p => p.id === id); }
- 
-  // ========== MODAL ==========
+
   function openAddModal() {
     document.getElementById('mName').value = '';
     document.getElementById('mBirth').value = '';
@@ -34,8 +32,7 @@ let people = [];
   document.getElementById('addModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
- 
-  // ========== ADD PERSON ==========
+
   function addPerson() {
     const name = document.getElementById('mName').value.trim();
     if (!name) { document.getElementById('mName').focus(); return; }
@@ -45,7 +42,7 @@ let people = [];
  
     const id = nextId++;
     const existing = people.length;
-    // Spread nodes nicely
+
     const col = existing % 4;
     const row = Math.floor(existing / 4);
     const x = 40 + col * 170;
@@ -57,8 +54,7 @@ let people = [];
     renderAll();
     selectPerson(id);
   }
- 
-  // ========== RENDER NODES ==========
+
   function renderAll() {
     emptyHint.style.display = people.length === 0 ? 'block' : 'none';
     renderNodes();
@@ -67,7 +63,7 @@ let people = [];
   }
  
   function renderNodes() {
-    // Remove old nodes
+
     document.querySelectorAll('.node').forEach(n => n.remove());
  
     people.forEach(p => {
@@ -86,16 +82,14 @@ let people = [];
         </div>
         ${years ? `<div class="node-years">${years}</div>` : ''}
       `;
- 
-      // Drag
+
       node.addEventListener('mousedown', onNodeMouseDown);
       node.addEventListener('click', (e) => { e.stopPropagation(); selectPerson(p.id); });
  
       canvas.appendChild(node);
     });
   }
- 
-  // ========== SVG CONNECTIONS ==========
+
   function renderConnections() {
     svgLines.innerHTML = '';
     connections.forEach(conn => {
@@ -119,8 +113,7 @@ let people = [];
       svgLines.appendChild(path);
     });
   }
- 
-  // ========== SIDEBAR ==========
+
   function renderSidebar() {
     // Person list
     const list = document.getElementById('personList');
@@ -143,13 +136,11 @@ let people = [];
       item.addEventListener('click', () => selectPerson(p.id));
       list.appendChild(item);
     });
- 
-    // Selects for connections
+
     const opts = people.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
     document.getElementById('connFrom').innerHTML = opts || '<option disabled>— немає людей —</option>';
     document.getElementById('connTo').innerHTML = opts || '<option disabled>— немає людей —</option>';
  
-    // Connection list
     const cList = document.getElementById('connectionList');
     cList.innerHTML = '';
     connections.forEach((c, i) => {
@@ -172,12 +163,11 @@ let people = [];
       cList.innerHTML = '<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:6px 0">Зв\'язків ще немає</div>';
     }
   }
- 
-  // ========== SELECT ==========
+
   function selectPerson(id) {
     selectedId = (selectedId === id) ? null : id;
     renderAll();
-    // Scroll to node
+
     if (selectedId) {
       const p = getById(selectedId);
       if (p) {
@@ -187,8 +177,7 @@ let people = [];
   }
  
   canvas.addEventListener('click', () => { selectedId = null; renderAll(); });
- 
-  // ========== DELETE ==========
+
   function deletePerson(id, e) {
     e.stopPropagation();
     people = people.filter(p => p.id !== id);
@@ -201,21 +190,19 @@ let people = [];
     connections.splice(i, 1);
     renderAll();
   }
- 
-  // ========== ADD CONNECTION ==========
+
   function addConnection() {
     const from = parseInt(document.getElementById('connFrom').value);
     const to = parseInt(document.getElementById('connTo').value);
     const type = document.getElementById('connType').value;
     if (!from || !to || from === to) return;
-    // No duplicates
+
     const dup = connections.find(c => c.from === from && c.to === to && c.type === type);
     if (dup) return;
     connections.push({ from, to, type });
     renderAll();
   }
- 
-  // ========== DRAG NODES ==========
+
   function onNodeMouseDown(e) {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -239,8 +226,7 @@ let people = [];
   });
  
   window.addEventListener('mouseup', () => { dragging = null; });
- 
-  // ========== ZOOM ==========
+
   function zoom(delta) {
     scale = Math.min(2, Math.max(0.3, scale + delta));
     canvas.style.transform = `scale(${scale})`;
@@ -253,16 +239,14 @@ let people = [];
     canvas.style.transform = '';
     svgLines.style.transform = '';
   }
- 
-  // ========== KEYBOARD ==========
+
   document.addEventListener('keydown', e => {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId && document.activeElement.tagName !== 'INPUT') {
       deletePerson(selectedId, { stopPropagation: () => {} });
     }
     if (e.key === 'Escape') { selectedId = null; renderAll(); closeModal(); }
   });
- 
-  // ========== INITIAL SAMPLE DATA ==========
+
   people = [
     { id: nextId++, name: 'Василь Петренко', birth: '1940', death: '2005', gender: 'm', x: 80, y: 80 },
     { id: nextId++, name: 'Марія Петренко', birth: '1945', death: '', gender: 'f', x: 260, y: 80 },
