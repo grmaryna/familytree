@@ -1,11 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Tree</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Родовід — Редактор дерева</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="createTree.css">
 </head>
 <body>
-    
+
+<body>
+ 
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="logo">Родо<span>від</span></a>
+  <div class="topbar-center">
+    <input class="tree-name" value="Моє сімейне дерево" id="treeName" spellcheck="false"/>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-outline btn-sm" onclick="openAddModal()">➕ Додати людину</button>
+    <button class="btn btn-primary btn-sm">💾 Зберегти</button>
+  </div>
+</div>
+ 
+<div class="layout">
+ 
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+ 
+    <!-- ADD PERSON shortcut -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">🌿 Учасники дерева</div>
+      <button class="btn btn-outline" style="width:100%;margin-bottom:12px" onclick="openAddModal()">+ Нова людина</button>
+      <div class="person-list" id="personList"></div>
+    </div>
+ 
+    <!-- CONNECTIONS -->
+    <div class="sidebar-section">
+      <div class="sidebar-title">🔗 Зв'язки</div>
+      <div class="conn-row">
+        <select id="connFrom"></select>
+        <span style="font-size:.8rem;color:var(--muted)">→</span>
+        <select id="connTo"></select>
+      </div>
+      <div class="input-group">
+        <label>Тип зв'язку</label>
+        <select id="connType">
+          <option value="parent">Батько/Мати</option>
+          <option value="child">Дитина</option>
+          <option value="partner">Партнер</option>
+          <option value="sibling">Брат/Сестра</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="addConnection()">Додати зв'язок</button>
+      <div class="connection-list" id="connectionList" style="margin-top:12px"></div>
+    </div>
+ 
+    <!-- HINT -->
+    <div class="sidebar-section">
+      <div class="hint">💡 Перетягуйте картки на полотні. Виділіть людину кліком — зв'язки підсвітяться.</div>
+    </div>
+ 
+  </aside>
+ 
+  <!-- CANVAS -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <svg id="svgLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible"></svg>
+    <div id="canvas">
+      <div class="empty-hint" id="emptyHint">
+        <div class="big">🌳</div>
+        <p>Додайте першого члена родини</p>
+      </div>
+    </div>
+    <div class="zoom-controls">
+      <div class="zoom-btn" onclick="zoom(0.15)" title="Збільшити">+</div>
+      <div class="zoom-btn" onclick="zoom(-0.15)" title="Зменшити">−</div>
+      <div class="zoom-btn" onclick="resetView()" title="Скинути">⌂</div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ADD PERSON MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2>Нова людина</h2>
+    <div class="input-group">
+      <label>Ім'я *</label>
+      <input type="text" id="mName" placeholder="Іван Петренко"/>
+    </div>
+    <div class="input-group">
+      <label>Рік народження</label>
+      <input type="text" id="mBirth" placeholder="1945"/>
+    </div>
+    <div class="input-group">
+      <label>Рік смерті (якщо є)</label>
+      <input type="text" id="mDeath" placeholder="2010"/>
+    </div>
+    <div class="input-group">
+      <label>Стать</label>
+      <select id="mGender">
+        <option value="m">Чоловік</option>
+        <option value="f">Жінка</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Скасувати</button>
+      <button class="btn btn-primary" onclick="addPerson()">Додати</button>
+    </div>
+  </div>
+</div>
+
+<script src="createTree.js"></script>
+
 </body>
 </html>

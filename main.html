@@ -1,24 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FamilyTree</title>
-    <link rel="stylesheet" href="./main.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Родовід — Сімейне Дерево</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="main.css">
 </head>
 <body>
-  <div class="page-wrapper">
-    <div class="hero">
-      <h1>Family tree</h1>
-      <p>You can save your family's history</p>
+  <div class="bg-deco"></div>
+
+  <nav>
+    <div class="logo">Родо<span>від</span></div>
+  </nav>
+
+  <section class="hero">
+    <div class="tree-icon">
+      <svg width="90" height="100" viewBox="0 0 90 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="45" cy="38" rx="32" ry="28" fill="#c8dfc0" opacity=".9"/>
+        <ellipse cx="25" cy="52" rx="18" ry="15" fill="#a8c9a0" opacity=".7"/>
+        <ellipse cx="65" cy="50" rx="18" ry="15" fill="#a8c9a0" opacity=".7"/>
+        <ellipse cx="45" cy="22" rx="22" ry="18" fill="#b8d4b0" opacity=".6"/>
+        <rect x="41" y="64" width="8" height="28" rx="4" fill="#7a5c3a"/>
+        <rect x="33" y="78" width="14" height="5" rx="2.5" fill="#7a5c3a" transform="rotate(-20 33 78)"/>
+        <rect x="57" y="76" width="14" height="5" rx="2.5" fill="#7a5c3a" transform="rotate(20 57 76)"/>
+      </svg>
     </div>
-    <div class="button-grid">
-      <button id="createTree">Create a new tree</button>
-      <button id="treeList">Tree list</button>
-      <button id="signIn">Sign in</button>
-      <button id="seatings">Settings</button>
+
+    <h1>Збережіть історію<br/>своєї <em>родини</em></h1>
+    <p>Створюйте, досліджуйте та діліться сімейними деревами. Зв'язуйте покоління в одну живу карту.</p>
+
+    <div class="btn-group">
+      <a href="createTree.html" class="btn btn-primary">
+        🌳 Нове дерево
+      </a>
+      <a href="#" class="btn btn-outline">
+        ⚙️ Налаштування
+      </a>
+      <a href="#" class="btn btn-ghost">
+        Увійти
+      </a>
     </div>
-  </div>
-  <script src="./main.js"></script>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">👤</div>
+      <h3>Додавайте людей</h3>
+      <p>Легко вносьте нових членів з фото та деталями</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Зв'язки</h3>
+      <p>Визначайте батьків, дітей та партнерів</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗺️</div>
+      <h3>Візуальна карта</h3>
+      <p>Переміщуйте та організуйте дерево як вам зручно</p>
+    </div>
+  </section>
 </body>
 </html>
