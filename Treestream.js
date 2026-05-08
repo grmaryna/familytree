@@ -252,7 +252,25 @@ export async function streamExportToResponse(db, treeId, res) {
   res.setHeader('Transfer-Encoding', 'chunked');
   res.setHeader('X-Stream-Format', 'ndjson-enriched');
 
+ const doc = await db.collection('trees').doc(treeId).get();
+  if (!doc.exists) { res.status(404).end(); return; }
 
+  const treeData   = doc.data();
+  const connections = treeData.connections || [];
+
+  res.write(JSON.stringify({
+    __type:       'tree-meta',
+    id:           treeId,
+    name:         treeData.name,
+    totalPeople:  (treeData.people || []).length,
+    totalConns:   connections.length,
+    exportedAt:   new Date().toISOString(),
+  }) + '\n');
+
+  for (const conn of connections) {
+    res.write(JSON.stringify({ __type: 'connection', ...conn }) + '\n');
+  }
+  
   const readStream   = createPeopleReadStream(db, treeId, { batchSize: 30 });
   const enrichStream = createEnrichTransform();
   const serializeStr = createNDJSONSerializeTransform();
