@@ -6,22 +6,26 @@
   <title>Родовід — Увійти</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="signIn.css">
+   <script src="signInthemes.js"> </script>
 </head>
+
 <body>
 
 <nav>
-  <a href="index.html" class="logo">Родо<span>від</span></a>
-  <a href="index.html" class="back-link">← Повернутись</a>
+  <a href="main.html" class="logo">Родо<span>від</span></a>
+  <a href="main.html" class="back-link">← Повернутись</a>
 </nav>
 
 <main>
   <div class="card" id="mainCard">
 
+    <!-- TABS -->
     <div class="tabs">
       <button class="tab active" id="tabSignin" onclick="switchTab('signin')">Увійти</button>
       <button class="tab" id="tabRegister" onclick="switchTab('register')">Реєстрація</button>
     </div>
 
+    <!-- SIGN IN FORM -->
     <div class="form-body" id="signinForm">
       <div class="form-title">З поверненням 👋</div>
       <div class="form-sub">Увійдіть, щоб продовжити роботу зі своїм деревом</div>
@@ -61,6 +65,7 @@
       </button>
     </div>
 
+    <!-- REGISTER FORM -->
     <div class="form-body" id="registerForm" style="display:none">
       <div class="form-title">Створити акаунт 🌱</div>
       <div class="form-sub">Почніть будувати своє сімейне дерево вже сьогодні</div>
@@ -118,16 +123,18 @@
       </div>
     </div>
 
+    <!-- SUCCESS -->
     <div class="success-msg" id="successMsg">
       <div class="success-icon">🎉</div>
       <h2 id="successTitle">Ласкаво просимо!</h2>
       <p id="successText">Ви успішно увійшли. Перейдіть до свого дерева.</p>
-      <a href="tree.html">Відкрити дерево →</a>
+      <a href="main.html">Відкрити дерево →</a>
     </div>
 
   </div>
 </main>
 
+<!-- FORGOT PASSWORD MODAL -->
 <div class="modal-overlay" id="forgotModal">
   <div class="modal">
     <h3>Відновлення пароля 🔑</h3>

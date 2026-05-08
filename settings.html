@@ -6,34 +6,38 @@
   <title>Родовід — Налаштування</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="settings.css">
+
 </head>
 <body>
 
 <nav>
-  <a href="index.html" class="logo">Родо<span>від</span></a>
-  <a href="index.html" class="back-link">← На головну</a>
+  <a href="main.html" class="logo">Родо<span>від</span></a>
+  <a href="main.html" class="back-link" data-i18n="nav.back">← На головну</a>
 </nav>
 
 <div class="page">
-  <div class="page-title">⚙️ Налаштування</div>
-  <div class="page-sub">Управляйте своїм акаунтом та персоналізуйте Родовід</div>
+  <div class="page-title">⚙️ <span data-i18n="page.title">Налаштування</span></div>
+  <div class="page-sub" data-i18n="page.sub">Управляйте своїм акаунтом та персоналізуйте Родовід</div>
 
   <div class="settings-layout">
 
+    <!-- SIDEBAR NAV -->
     <nav class="settings-nav">
-      <button class="nav-item active" onclick="showSection('profile', this)"><span class="nav-icon">👤</span> Профіль</button>
-      <button class="nav-item" onclick="showSection('appearance', this)"><span class="nav-icon">🎨</span> Вигляд</button>
-      <button class="nav-item" onclick="showSection('notifications', this)"><span class="nav-icon">🔔</span> Сповіщення</button>
-      <button class="nav-item" onclick="showSection('privacy', this)"><span class="nav-icon">🔒</span> Приватність</button>
-      <button class="nav-item" onclick="showSection('data', this)"><span class="nav-icon">📦</span> Дані</button>
-      <button class="nav-item" onclick="showSection('danger', this)"><span class="nav-icon">⚠️</span> Небезпечна зона</button>
+      <button class="nav-item active" onclick="showSection('profile', this)"><span class="nav-icon">👤</span> <span data-i18n="nav.profile">Профіль</span></button>
+      <button class="nav-item" onclick="showSection('appearance', this)"><span class="nav-icon">🎨</span> <span data-i18n="nav.appearance">Вигляд</span></button>
+      <button class="nav-item" onclick="showSection('notifications', this)"><span class="nav-icon">🔔</span> <span data-i18n="nav.notifications">Сповіщення</span></button>
+      <button class="nav-item" onclick="showSection('privacy', this)"><span class="nav-icon">🔒</span> <span data-i18n="nav.privacy">Приватність</span></button>
+      <button class="nav-item" onclick="showSection('data', this)"><span class="nav-icon">📦</span> <span data-i18n="nav.data">Дані</span></button>
+      <button class="nav-item" onclick="showSection('danger', this)"><span class="nav-icon">⚠️</span> <span data-i18n="nav.danger">Небезпечна зона</span></button>
     </nav>
 
+    <!-- CONTENT -->
     <div class="settings-content">
 
+      <!-- PROFILE -->
       <div class="section active" id="sec-profile">
-        <div class="section-title">Профіль</div>
-        <div class="section-desc">Ваше ім'я та особиста інформація</div>
+        <div class="section-title" data-i18n="profile.title">Профіль</div>
+        <div class="section-desc" data-i18n="profile.desc">Ваше ім'я та особиста інформація</div>
 
         <div class="avatar-section">
           <div class="avatar-preview" id="avatarPreview">
@@ -51,67 +55,68 @@
 
         <div class="input-row">
           <div class="input-group">
-            <label>Ім'я</label>
+            <label data-i18n="profile.firstName">Ім'я</label>
             <input type="text" id="firstName" value="Іван" placeholder="Ім'я"/>
           </div>
           <div class="input-group">
-            <label>Прізвище</label>
+            <label data-i18n="profile.lastName">Прізвище</label>
             <input type="text" id="lastName" value="Петренко" placeholder="Прізвище"/>
           </div>
         </div>
 
         <div class="input-group">
-          <label>Електронна пошта</label>
+          <label data-i18n="profile.email">Електронна пошта</label>
           <input type="email" id="email" value="ivan.petrenko@example.com"/>
         </div>
 
         <div class="input-group">
-          <label>Про себе</label>
+          <label data-i18n="profile.bio">Про себе</label>
           <textarea id="bio" placeholder="Розкажіть трохи про себе...">Досліджую коріння своєї родини з Полтавщини.</textarea>
         </div>
 
         <div class="input-row">
           <div class="input-group">
-            <label>Дата народження</label>
+            <label data-i18n="profile.dob">Дата народження</label>
             <input type="date" id="dob" value="1990-05-15"/>
           </div>
           <div class="input-group">
-            <label>Телефон</label>
+            <label data-i18n="profile.phone">Телефон</label>
             <input type="tel" id="phone" placeholder="+380 XX XXX XX XX"/>
           </div>
         </div>
 
         <div class="s-divider"></div>
-        <div class="section-title" style="font-size:1rem;margin-bottom:4px">Змінити пароль</div>
-        <div class="section-desc" style="margin-bottom:16px">Залиште порожнім, якщо не хочете змінювати</div>
+        <div class="section-title" style="font-size:1rem;margin-bottom:4px" data-i18n="profile.changePass">Змінити пароль</div>
+        <div class="section-desc" style="margin-bottom:16px" data-i18n="profile.passHint">Залиште порожнім, якщо не хочете змінювати</div>
 
         <div class="input-group">
-          <label>Поточний пароль</label>
+          <label data-i18n="profile.currentPass">Поточний пароль</label>
           <input type="password" placeholder="••••••••"/>
         </div>
         <div class="input-row">
           <div class="input-group">
-            <label>Новий пароль</label>
+            <label data-i18n="profile.newPass">Новий пароль</label>
             <input type="password" placeholder="••••••••"/>
           </div>
           <div class="input-group">
-            <label>Підтвердження</label>
+            <label data-i18n="profile.confirmPass">Підтвердження</label>
             <input type="password" placeholder="••••••••"/>
           </div>
         </div>
 
         <div class="save-row">
-          <button class="btn btn-ghost" onclick="resetProfile()">Скасувати</button>
-          <button class="btn btn-primary" onclick="save('Профіль збережено ✓')">Зберегти зміни</button>
+          <button class="btn btn-ghost" onclick="resetProfile()" data-i18n="btn.cancel">Скасувати</button>
+          <button class="btn btn-primary" onclick="save(T('toast.profileSaved'))" data-i18n="btn.saveChanges">Зберегти зміни</button>
         </div>
       </div>
 
+      <!-- APPEARANCE -->
       <div class="section" id="sec-appearance">
-        <div class="section-title">Вигляд</div>
-        <div class="section-desc">Тема та мова інтерфейсу</div>
+        <div class="section-title" data-i18n="appear.title">Вигляд</div>
+        <div class="section-desc" data-i18n="appear.desc">Тема та мова інтерфейсу</div>
 
         <div class="input-group">
-          <label>Тема кольорів</label>
+          <label data-i18n="appear.themeLabel">Тема кольорів</label>
         </div>
         <div class="theme-grid">
           <div class="theme-option selected" onclick="selectTheme(this)" data-theme="forest">
@@ -161,7 +166,7 @@
         <div class="s-divider"></div>
 
         <div class="input-group" style="margin-bottom:0">
-          <label>Мова інтерфейсу</label>
+          <label data-i18n="appear.langLabel">Мова інтерфейсу</label>
         </div>
         <div class="lang-grid" style="margin-top:10px;margin-bottom:18px">
           <div class="lang-option selected" onclick="selectLang(this)"><span class="lang-flag">🇺🇦</span> Українська</div>
@@ -170,96 +175,87 @@
           <div class="lang-option" onclick="selectLang(this)"><span class="lang-flag">🇵🇱</span> Polski</div>
         </div>
 
-        <div class="s-divider"></div>
-
-        <div class="input-group">
-          <label>Розмір шрифту</label>
-          <select>
-            <option>Малий</option>
-            <option selected>Середній</option>
-            <option>Великий</option>
-          </select>
-        </div>
-
         <div class="save-row">
-          <button class="btn btn-primary" onclick="save('Зовнішній вигляд збережено ✓')">Застосувати</button>
+          <button class="btn btn-primary" onclick="applyTheme(); applyLang();" data-i18n="btn.apply">Застосувати</button>
         </div>
       </div>
 
+      <!-- NOTIFICATIONS -->
       <div class="section" id="sec-notifications">
-        <div class="section-title">Сповіщення</div>
-        <div class="section-desc">Керуйте тим, що і як вам надходить</div>
+        <div class="section-title" data-i18n="notif.title">Сповіщення</div>
+        <div class="section-desc" data-i18n="notif.desc">Керуйте тим, що і як вам надходить</div>
 
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Email-сповіщення</div>
-            <div class="t-desc">Отримувати важливі оновлення на пошту</div>
+            <div class="t-title" data-i18n="notif.email">Email-сповіщення</div>
+            <div class="t-desc" data-i18n="notif.emailDesc">Отримувати важливі оновлення на пошту</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Нові спільні дерева</div>
-            <div class="t-desc">Коли хтось запрошує вас до дерева</div>
+            <div class="t-title" data-i18n="notif.shared">Нові спільні дерева</div>
+            <div class="t-desc" data-i18n="notif.sharedDesc">Коли хтось запрошує вас до дерева</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Зміни від учасників</div>
-            <div class="t-desc">Коли хтось редагує спільне дерево</div>
+            <div class="t-title" data-i18n="notif.changes">Зміни від учасників</div>
+            <div class="t-desc" data-i18n="notif.changesDesc">Коли хтось редагує спільне дерево</div>
           </div>
           <label class="toggle"><input type="checkbox"/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Нагадування про дні народження</div>
-            <div class="t-desc">Сповіщення за день до дати народження</div>
+            <div class="t-title" data-i18n="notif.bday">Нагадування про дні народження</div>
+            <div class="t-desc" data-i18n="notif.bdayDesc">Сповіщення за день до дати народження</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Маркетингові листи</div>
-            <div class="t-desc">Поради, новини та оновлення продукту</div>
+            <div class="t-title" data-i18n="notif.marketing">Маркетингові листи</div>
+            <div class="t-desc" data-i18n="notif.marketingDesc">Поради, новини та оновлення продукту</div>
           </div>
           <label class="toggle"><input type="checkbox"/><div class="toggle-track"></div></label>
         </div>
 
         <div class="save-row">
-          <button class="btn btn-primary" onclick="save('Налаштування збережено ✓')">Зберегти</button>
+          <button class="btn btn-primary" onclick="save(T('toast.saved'))" data-i18n="btn.save">Зберегти</button>
         </div>
       </div>
 
+      <!-- PRIVACY -->
       <div class="section" id="sec-privacy">
-        <div class="section-title">Приватність</div>
-        <div class="section-desc">Контролюйте, хто що бачить</div>
+        <div class="section-title" data-i18n="priv.title">Приватність</div>
+        <div class="section-desc" data-i18n="priv.desc">Контролюйте, хто що бачить</div>
 
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Публічний профіль</div>
-            <div class="t-desc">Інші користувачі можуть знайти вас у пошуку</div>
+            <div class="t-title" data-i18n="priv.public">Публічний профіль</div>
+            <div class="t-desc" data-i18n="priv.publicDesc">Інші користувачі можуть знайти вас у пошуку</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Відображати дату народження</div>
-            <div class="t-desc">Видимо для учасників спільних дерев</div>
+            <div class="t-title" data-i18n="priv.showDob">Відображати дату народження</div>
+            <div class="t-desc" data-i18n="priv.showDobDesc">Видимо для учасників спільних дерев</div>
           </div>
           <label class="toggle"><input type="checkbox"/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Дозволити запрошення</div>
-            <div class="t-desc">Інші можуть запрошувати вас до дерев</div>
+            <div class="t-title" data-i18n="priv.invites">Дозволити запрошення</div>
+            <div class="t-desc" data-i18n="priv.invitesDesc">Інші можуть запрошувати вас до дерев</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Двофакторна автентифікація</div>
-            <div class="t-desc">Підвищений захист акаунту</div>
+            <div class="t-title" data-i18n="priv.2fa">Двофакторна автентифікація</div>
+            <div class="t-desc" data-i18n="priv.2faDesc">Підвищений захист акаунту</div>
           </div>
           <label class="toggle"><input type="checkbox"/><div class="toggle-track"></div></label>
         </div>
@@ -267,7 +263,7 @@
         <div class="s-divider"></div>
 
         <div class="input-group">
-          <label>Хто може переглядати ваші дерева</label>
+          <label data-i18n="priv.visibility">Хто може переглядати ваші дерева</label>
           <select>
             <option>Тільки я</option>
             <option selected>Запрошені учасники</option>
@@ -277,32 +273,34 @@
         </div>
 
         <div class="save-row">
-          <button class="btn btn-primary" onclick="save('Налаштування приватності збережено ✓')">Зберегти</button>
+          <button class="btn btn-primary" onclick="save(T('toast.saved'))" data-i18n="btn.save">Зберегти</button>
         </div>
+      </div>
 
+      <!-- DATA -->
       <div class="section" id="sec-data">
-        <div class="section-title">Дані та експорт</div>
-        <div class="section-desc">Управляйте своїми даними та деревами</div>
+        <div class="section-title" data-i18n="data.title">Дані та експорт</div>
+        <div class="section-desc" data-i18n="data.desc">Управляйте своїми даними та деревами</div>
 
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Автозбереження</div>
-            <div class="t-desc">Автоматично зберігати зміни кожні 5 хвилин</div>
+            <div class="t-title" data-i18n="data.autosave">Автозбереження</div>
+            <div class="t-desc" data-i18n="data.autosaveDesc">Автоматично зберігати зміни кожні 5 хвилин</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
         <div class="toggle-row">
           <div class="toggle-info">
-            <div class="t-title">Резервні копії</div>
-            <div class="t-desc">Щотижнева резервна копія у хмарі</div>
+            <div class="t-title" data-i18n="data.backup">Резервні копії</div>
+            <div class="t-desc" data-i18n="data.backupDesc">Щотижнева резервна копія у хмарі</div>
           </div>
           <label class="toggle"><input type="checkbox" checked/><div class="toggle-track"></div></label>
         </div>
 
         <div class="s-divider"></div>
 
-        <div class="section-title" style="font-size:1rem;margin-bottom:4px">Експорт даних</div>
-        <div class="section-desc" style="margin-bottom:16px">Завантажте своє дерево у різних форматах</div>
+        <div class="section-title" style="font-size:1rem;margin-bottom:4px" data-i18n="data.exportTitle">Експорт даних</div>
+        <div class="section-desc" style="margin-bottom:16px" data-i18n="data.exportDesc">Завантажте своє дерево у різних форматах</div>
 
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-outline" onclick="save('Експорт PDF розпочато ↓')">📄 Експорт PDF</button>
@@ -312,62 +310,65 @@
 
         <div class="s-divider"></div>
 
-        <div class="section-title" style="font-size:1rem;margin-bottom:4px">Імпорт</div>
-        <div class="section-desc" style="margin-bottom:16px">Завантажте існуюче дерево у форматі GEDCOM</div>
+        <div class="section-title" style="font-size:1rem;margin-bottom:4px" data-i18n="data.importTitle">Імпорт</div>
+        <div class="section-desc" style="margin-bottom:16px" data-i18n="data.importDesc">Завантажте існуюче дерево у форматі GEDCOM</div>
         <label class="btn btn-ghost" style="cursor:pointer">
           📂 Вибрати файл GEDCOM
           <input type="file" accept=".ged,.gedcom" style="display:none" onchange="importFile(this)"/>
         </label>
       </div>
 
+      <!-- DANGER ZONE -->
       <div class="section" id="sec-danger">
-        <div class="section-title" style="color:var(--red)">⚠️ Небезпечна зона</div>
-        <div class="section-desc">Незворотні дії — будьте обережні</div>
+        <div class="section-title" style="color:var(--red)">⚠️ <span data-i18n="danger.title">Небезпечна зона</span></div>
+        <div class="section-desc" data-i18n="danger.desc">Незворотні дії — будьте обережні</div>
 
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="danger-box">
             <div class="d-info">
-              <div class="d-title">Видалити всі дерева</div>
-              <div class="d-desc">Усі ваші дерева та зв'язки будуть видалені назавжди</div>
+              <div class="d-title" data-i18n="danger.deleteTrees">Видалити всі дерева</div>
+              <div class="d-desc" data-i18n="danger.deleteTreesDesc">Усі ваші дерева та зв'язки будуть видалені назавжди</div>
             </div>
-            <button class="btn btn-danger btn-sm" onclick="openDanger('trees')">Видалити дерева</button>
+            <button class="btn btn-danger btn-sm" onclick="openDanger('trees')" data-i18n="danger.deleteTreesBtn">Видалити дерева</button>
           </div>
           <div class="danger-box">
             <div class="d-info">
-              <div class="d-title">Вийти з усіх пристроїв</div>
-              <div class="d-desc">Завершити всі активні сесії, крім поточної</div>
+              <div class="d-title" data-i18n="danger.logoutAll">Вийти з усіх пристроїв</div>
+              <div class="d-desc" data-i18n="danger.logoutAllDesc">Завершити всі активні сесії, крім поточної</div>
             </div>
-            <button class="btn btn-danger btn-sm" onclick="save('Всі сесії завершено ✓')">Вийти скрізь</button>
+            <button class="btn btn-danger btn-sm" onclick="save(T('toast.loggedOut'))" data-i18n="danger.logoutAllBtn">Вийти скрізь</button>
           </div>
           <div class="danger-box">
             <div class="d-info">
-              <div class="d-title">Видалити акаунт</div>
-              <div class="d-desc">Акаунт та всі дані будуть видалені безповоротно</div>
+              <div class="d-title" data-i18n="danger.deleteAccount">Видалити акаунт</div>
+              <div class="d-desc" data-i18n="danger.deleteAccountDesc">Акаунт та всі дані будуть видалені безповоротно</div>
             </div>
-            <button class="btn btn-danger btn-sm" onclick="openDanger('account')">Видалити акаунт</button>
+            <button class="btn btn-danger btn-sm" onclick="openDanger('account')" data-i18n="danger.deleteAccountBtn">Видалити акаунт</button>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
+    </div><!-- /settings-content -->
+  </div><!-- /settings-layout -->
 </div>
 
+<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="dangerModal">
   <div class="modal">
-    <h3 id="dangerTitle">Підтвердіть дію</h3>
-    <p id="dangerText">Ця дія незворотна.</p>
+    <h3 id="dangerTitle" data-i18n="modal.confirm">Підтвердіть дію</h3>
+    <p id="dangerText" data-i18n="modal.irreversible">Ця дія незворотна.</p>
     <p>Введіть <strong>ВИДАЛИТИ</strong> для підтвердження:</p>
     <div style="margin-top:10px">
       <input type="text" id="dangerInput" placeholder="ВИДАЛИТИ" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:Lato,sans-serif;font-size:.9rem;outline:none;background:var(--bg);color:var(--text)"/>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" onclick="closeDanger()">Скасувати</button>
-      <button class="btn btn-danger btn-sm" id="dangerConfirmBtn" onclick="confirmDanger()">Підтвердити</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeDanger()" data-i18n="btn.cancel">Скасувати</button>
+      <button class="btn btn-danger btn-sm" id="dangerConfirmBtn" onclick="confirmDanger()" data-i18n="btn.confirm">Підтвердити</button>
     </div>
   </div>
 </div>
 
+<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script src="settings.js"></script>

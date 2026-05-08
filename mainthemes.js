@@ -1,0 +1,8 @@
+(function(){
+  var themes={forest:{'--bg':'#f5f0e8','--bg2':'#ede6d6','--green':'#3a6b4a','--green-light':'#5a8f6a','--green-pale':'#d4e8da','--brown':'#7a5c3a','--text':'#2c2218','--muted':'#7a6a55','--border':'#d8cdb8','--white':'#fff'},ocean:{'--bg':'#e8f2f8','--bg2':'#d8eaf4','--green':'#2a6080','--green-light':'#3a80a8','--green-pale':'#c8e0ee','--brown':'#3a6878','--text':'#0f2a38','--muted':'#4a7088','--border':'#b8d4e4','--white':'#fff'},autumn:{'--bg':'#fdf3e8','--bg2':'#f5e6d0','--green':'#a04020','--green-light':'#c05030','--green-pale':'#fde0cc','--brown':'#8a5020','--text':'#2a1408','--muted':'#8a5a3a','--border':'#e0c8a8','--white':'#fff'},night:{'--bg':'#1a1f2e','--bg2':'#141824','--green':'#4a7acf','--green-light':'#6a9aef','--green-pale':'#1e2d4a','--brown':'#7a8aaa','--text':'#e0e8f8','--muted':'#8090b0','--border':'#2a3550','--white':'#1e2438'},rose:{'--bg':'#fdf0f0','--bg2':'#f5e2e2','--green':'#a04060','--green-light':'#c05070','--green-pale':'#fde0e8','--brown':'#8a4050','--text':'#280a14','--muted':'#8a4a58','--border':'#e0c0c8','--white':'#fff'},sand:{'--bg':'#f5f0e0','--bg2':'#ede4cc','--green':'#7a6030','--green-light':'#9a7840','--green-pale':'#e8dfc0','--brown':'#6a5028','--text':'#28200c','--muted':'#7a6840','--border':'#d8c898','--white':'#fff'}};
+  var t=localStorage.getItem('rodo-theme');
+  if(t&&themes[t])Object.entries(themes[t]).forEach(function(e){document.documentElement.style.setProperty(e[0],e[1])});
+  var f=localStorage.getItem('rodo-font');
+  var fs={small:'13px',medium:'15px',large:'17px'};
+  if(f&&fs[f])document.addEventListener('DOMContentLoaded',function(){document.body.style.fontSize=fs[f]});
+})();
