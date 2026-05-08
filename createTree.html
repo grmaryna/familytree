@@ -6,6 +6,25 @@
   <title>Родовід — Редактор дерева</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="createTree.css">
+
+  <!-- Тема застосовується ДО рендеру, щоб не було мерехтіння -->
+  <script>
+    (function() {
+      var themes = {
+        forest: {'--bg':'#f5f0e8','--bg2':'#ede6d6','--green':'#3a6b4a','--green-light':'#5a8f6a','--green-pale':'#d4e8da','--brown':'#7a5c3a','--text':'#2c2218','--muted':'#7a6a55','--border':'#d8cdb8','--white':'#fff'},
+        ocean:  {'--bg':'#e8f2f8','--bg2':'#d8eaf4','--green':'#2a6080','--green-light':'#3a80a8','--green-pale':'#c8e0ee','--brown':'#3a6878','--text':'#0f2a38','--muted':'#4a7088','--border':'#b8d4e4','--white':'#fff'},
+        autumn: {'--bg':'#fdf3e8','--bg2':'#f5e6d0','--green':'#a04020','--green-light':'#c05030','--green-pale':'#fde0cc','--brown':'#8a5020','--text':'#2a1408','--muted':'#8a5a3a','--border':'#e0c8a8','--white':'#fff'},
+        night:  {'--bg':'#1a1f2e','--bg2':'#141824','--green':'#4a7acf','--green-light':'#6a9aef','--green-pale':'#1e2d4a','--brown':'#7a8aaa','--text':'#e0e8f8','--muted':'#8090b0','--border':'#2a3550','--white':'#1e2438'},
+        rose:   {'--bg':'#fdf0f0','--bg2':'#f5e2e2','--green':'#a04060','--green-light':'#c05070','--green-pale':'#fde0e8','--brown':'#8a4050','--text':'#280a14','--muted':'#8a4a58','--border':'#e0c0c8','--white':'#fff'},
+        sand:   {'--bg':'#f5f0e0','--bg2':'#ede4cc','--green':'#7a6030','--green-light':'#9a7840','--green-pale':'#e8dfc0','--brown':'#6a5028','--text':'#28200c','--muted':'#7a6840','--border':'#d8c898','--white':'#fff'},
+      };
+      var t = localStorage.getItem('rodo-theme');
+      if (t && themes[t]) {
+        var vars = themes[t];
+        for (var k in vars) document.documentElement.style.setProperty(k, vars[k]);
+      }
+    })();
+  </script>
 </head>
 
 <body>
@@ -17,8 +36,8 @@
     <input class="tree-name" value="Моє сімейне дерево" id="treeName" spellcheck="false"/>
   </div>
   <div class="topbar-actions">
-    <button class="btn btn-outline btn-sm" onclick="openAddModal()">➕ Додати людину</button>
-    <button class="btn btn-primary btn-sm">💾 Зберегти</button>
+    <button class="btn btn-outline btn-sm" id="btnOpenModal">➕ Додати людину</button>
+    <button class="btn btn-primary btn-sm" id="saveBtnMain">💾 Зберегти</button>
   </div>
 </div>
 
@@ -27,14 +46,12 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
 
-    <!-- ADD PERSON shortcut -->
     <div class="sidebar-section">
       <div class="sidebar-title">🌿 Учасники дерева</div>
-      <button class="btn btn-outline" style="width:100%;margin-bottom:12px" onclick="openAddModal()">+ Нова людина</button>
+      <button class="btn btn-outline" style="width:100%;margin-bottom:12px" id="btnOpenModal2">+ Нова людина</button>
       <div class="person-list" id="personList"></div>
     </div>
 
-    <!-- CONNECTIONS -->
     <div class="sidebar-section">
       <div class="sidebar-title">🔗 Зв'язки</div>
       <div class="conn-row">
@@ -51,11 +68,10 @@
           <option value="sibling">Брат/Сестра</option>
         </select>
       </div>
-      <button class="btn btn-primary" style="width:100%" onclick="addConnection()">Додати зв'язок</button>
+      <button class="btn btn-primary" style="width:100%" id="btnAddConn">Додати зв'язок</button>
       <div class="connection-list" id="connectionList" style="margin-top:12px"></div>
     </div>
 
-    <!-- HINT -->
     <div class="sidebar-section">
       <div class="hint">💡 Перетягуйте картки на полотні. Виділіть людину кліком — зв'язки підсвітяться.</div>
     </div>
@@ -72,9 +88,9 @@
       </div>
     </div>
     <div class="zoom-controls">
-      <div class="zoom-btn" onclick="zoom(0.15)" title="Збільшити">+</div>
-      <div class="zoom-btn" onclick="zoom(-0.15)" title="Зменшити">−</div>
-      <div class="zoom-btn" onclick="resetView()" title="Скинути">⌂</div>
+      <div class="zoom-btn" id="btnZoomIn">+</div>
+      <div class="zoom-btn" id="btnZoomOut">−</div>
+      <div class="zoom-btn" id="btnZoomReset">⌂</div>
     </div>
   </div>
 </div>
@@ -103,13 +119,14 @@
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Скасувати</button>
-      <button class="btn btn-primary" onclick="addPerson()">Додати</button>
+      <button class="btn btn-ghost" id="btnCloseModal">Скасувати</button>
+      <button class="btn btn-primary" id="btnAddPerson">Додати</button>
     </div>
   </div>
 </div>
 
-<script src="createTree.js"></script>
+<!-- Головний скрипт як ES-модуль -->
+<script type="module" src="createTree.js"></script>
 
 </body>
 </html>

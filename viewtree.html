@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Родовід — Перегляд дерева</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="viewTree.css">
+</head>
+<body>
+
+<div class="topbar">
+  <a href="main.html" class="logo">Родо<span>від</span></a>
+  <span class="tree-title" id="treeTitle">Завантаження…</span>
+  <div class="topbar-actions">
+    <a id="editBtn" href="#" class="btn btn-outline btn-sm">✏️ Редагувати</a>
+    <a href="main.html" class="btn btn-primary btn-sm">🏠 Головна</a>
+  </div>
+</div>
+
+<div class="legend">
+  <span style="font-weight:600;color:var(--text)">Зв'язки:</span>
+  <span class="legend-item"><span class="legend-line l-parent"></span> Батько/Мати</span>
+  <span class="legend-item"><span class="legend-line" style="background:#6a75cc;height:2px;border-radius:1px;width:28px"></span> Партнер</span>
+  <span class="legend-item"><span class="legend-line l-sibling"></span> Брат/Сестра</span>
+  <span style="color:var(--muted);margin-left:auto">👆 Клікніть на картку для деталей</span>
+</div>
+
+<div class="canvas-wrap" id="canvasWrap">
+  <svg id="svgLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible"></svg>
+  <div id="canvas">
+    <div class="loading" id="loadingHint">
+      <div class="spinner"></div>
+      <p style="color:var(--muted);font-size:.9rem">Завантаження дерева…</p>
+    </div>
+    <div class="empty-hint" id="emptyHint" style="display:none">
+      <div class="big">🌳</div>
+      <p>Дерево порожнє</p>
+    </div>
+  </div>
+  <div class="detail-panel" id="detailPanel">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div class="detail-avatar" id="detailAvatar"></div>
+    <div class="detail-name"  id="detailName"></div>
+    <div class="detail-years" id="detailYears"></div>
+    <div class="detail-rel"   id="detailRel"></div>
+  </div>
+  <div class="zoom-controls">
+    <div class="zoom-btn" onclick="zoom(0.15)">+</div>
+    <div class="zoom-btn" onclick="zoom(-0.15)">−</div>
+    <div class="zoom-btn" onclick="resetView()">⌂</div>
+  </div>
+</div>
+
+<script type="module" src="viewTree.js"> </script>
+</body>
+</html>

@@ -1,18 +1,18 @@
 /**
- * createTree.js — редактор дерева з підтримкою бекенду
- * Зберігає/завантажує дерево через Node.js API
+ * createTree.js — редактор дерева
+ * Підключається як <script type="module"> — всі обробники через addEventListener
  */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { initializeApp }      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
-  authDomain: "family-tree-ce8a3.firebaseapp.com",
-  projectId: "family-tree-ce8a3",
-  storageBucket: "family-tree-ce8a3.firebasestorage.app",
+  apiKey:            "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
+  authDomain:        "family-tree-ce8a3.firebaseapp.com",
+  projectId:         "family-tree-ce8a3",
+  storageBucket:     "family-tree-ce8a3.firebasestorage.app",
   messagingSenderId: "304616447045",
-  appId: "1:304616447045:web:1b98da8b6a0481c65d572c"
+  appId:             "1:304616447045:web:1b98da8b6a0481c65d572c",
 };
 
 const app  = initializeApp(firebaseConfig);
@@ -28,20 +28,40 @@ let scale       = 1;
 let dragging    = null;
 let dragOffset  = { x: 0, y: 0 };
 let nextId      = 1;
-let treeId      = null;     // ID дерева в Firestore
-let saveTimeout = null;     // для автозбереження
+let treeId      = null;
+let saveTimeout = null;
 
+// ─── DOM ──────────────────────────────────────────────────────────────────────
 const canvas    = document.getElementById('canvas');
 const svgLines  = document.getElementById('svgLines');
 const emptyHint = document.getElementById('emptyHint');
+const addModal  = document.getElementById('addModal');
+
+// ─── Прив'язуємо кнопки одразу (DOM вже готовий, бо скрипт унизу body) ───────
+document.getElementById('btnOpenModal') .addEventListener('click', openAddModal);
+document.getElementById('btnOpenModal2').addEventListener('click', openAddModal);
+document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+document.getElementById('btnAddPerson') .addEventListener('click', addPerson);
+document.getElementById('btnAddConn')   .addEventListener('click', addConnection);
+document.getElementById('saveBtnMain')  .addEventListener('click', saveTree);
+document.getElementById('btnZoomIn')    .addEventListener('click', () => zoom(0.15));
+document.getElementById('btnZoomOut')   .addEventListener('click', () => zoom(-0.15));
+document.getElementById('btnZoomReset') .addEventListener('click', resetView);
+
+// Закрити модалку кліком на фон
+addModal.addEventListener('click', (e) => { if (e.target === addModal) closeModal(); });
+
+// Enter у полі імені — додати людину
+document.getElementById('mName').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addPerson();
+});
 
 // ─── API хелпер ───────────────────────────────────────────────────────────────
 async function apiRequest(method, path, body = null) {
   const user = auth.currentUser;
   if (!user) throw new Error('Не авторизовано');
-
   const token = await user.getIdToken();
-  const opts  = {
+  const opts = {
     method,
     headers: {
       'Content-Type':  'application/json',
@@ -49,37 +69,30 @@ async function apiRequest(method, path, body = null) {
     },
   };
   if (body) opts.body = JSON.stringify(body);
-
   const res  = await fetch(BASE_URL + path, opts);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Помилка сервера');
   return data;
 }
 
-// ─── Завантаження дерева при старті ──────────────────────────────────────────
+// ─── Авторизація + завантаження дерева ───────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Незареєстрований — перенаправляємо на вхід
     window.location.href = 'signIn.html';
     return;
   }
 
-  // Беремо treeId з URL (?treeId=xxx) або вантажимо перше дерево
   const params = new URLSearchParams(window.location.search);
   treeId = params.get('treeId');
 
   try {
     if (treeId) {
-      // Завантажуємо конкретне дерево
       await loadTree(treeId);
     } else {
-      // Беремо список дерев — якщо є, відкриваємо перше; якщо ні — створюємо нове
       const trees = await apiRequest('GET', '/trees');
-
       if (trees.length > 0) {
         treeId = trees[0].id;
         await loadTree(treeId);
-        // Оновлюємо URL без перезавантаження
         history.replaceState({}, '', `?treeId=${treeId}`);
       } else {
         treeId = await createNewTree();
@@ -87,8 +100,18 @@ onAuthStateChanged(auth, async (user) => {
     }
   } catch (e) {
     console.warn('Бекенд недоступний, працюємо локально:', e.message);
-    // Демо-дані якщо бекенд не запущено
-    loadDemoData();
+    const local = localStorage.getItem('rodo-tree-local');
+    if (local) {
+      try {
+        const saved = JSON.parse(local);
+        people      = saved.people      || [];
+        connections = saved.connections || [];
+        document.getElementById('treeName').value = saved.name || 'Моє сімейне дерево';
+        nextId = people.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1;
+      } catch (_) { loadDemoData(); }
+    } else {
+      loadDemoData();
+    }
   }
 
   renderAll();
@@ -96,14 +119,10 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadTree(id) {
   const data = await apiRequest('GET', `/trees/${id}`);
-
   document.getElementById('treeName').value = data.name || 'Моє сімейне дерево';
   people      = data.people      || [];
   connections = data.connections || [];
-
-  // Відновлюємо nextId щоб не було дублікатів
-  const maxId = people.reduce((m, p) => Math.max(m, p.id || 0), 0);
-  nextId = maxId + 1;
+  nextId = people.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1;
 }
 
 async function createNewTree() {
@@ -114,105 +133,99 @@ async function createNewTree() {
 }
 
 // ─── Збереження ───────────────────────────────────────────────────────────────
-
-// Зберегти одразу
 async function saveTree() {
-  if (!treeId || !auth.currentUser) return;
+  const btn = document.getElementById('saveBtnMain');
 
-  const saveBtn = document.querySelector('.btn-primary[data-save]');
-  if (saveBtn) saveBtn.textContent = '⏳ Збереження...';
-
-  try {
-    await apiRequest('PUT', `/trees/${treeId}`, {
-      name:        document.getElementById('treeName').value,
+  if (treeId && auth.currentUser) {
+    btn.textContent = '⏳ Збереження...';
+    btn.disabled = true;
+    try {
+      await apiRequest('PUT', `/trees/${treeId}`, {
+        name:        document.getElementById('treeName').value,
+        people,
+        connections,
+      });
+      btn.textContent = '✅ Збережено';
+    } catch (e) {
+      console.error(e);
+      btn.textContent = '❌ Помилка';
+    }
+  } else {
+    // Локальний fallback
+    localStorage.setItem('rodo-tree-local', JSON.stringify({
+      name:   document.getElementById('treeName').value,
       people,
       connections,
-    });
-
-    if (saveBtn) {
-      saveBtn.textContent = '✅ Збережено';
-      setTimeout(() => { saveBtn.textContent = '💾 Зберегти'; }, 2000);
-    }
-  } catch (e) {
-    console.error('Помилка збереження:', e);
-    if (saveBtn) saveBtn.textContent = '❌ Помилка';
-    setTimeout(() => { saveBtn.textContent = '💾 Зберегти'; }, 2000);
+    }));
+    btn.textContent = '✅ Збережено';
   }
+
+  btn.disabled = false;
+  setTimeout(() => { btn.textContent = '💾 Зберегти'; }, 2000);
 }
 
-// Автозбереження через 1.5 сек після змін
 function scheduleSave() {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(saveTree, 1500);
 }
 
-// Вішаємо збереження на кнопку
-document.querySelector('.btn-primary')?.setAttribute('data-save', '1');
-document.querySelector('.btn-primary')?.addEventListener('click', saveTree);
+document.getElementById('treeName').addEventListener('input', scheduleSave);
 
-// ─── Решта логіки (без змін від оригіналу) ───────────────────────────────────
-
-function initials(name) {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function getById(id) { return people.find(p => p.id === id); }
-
+// ─── Модальне вікно ───────────────────────────────────────────────────────────
 function openAddModal() {
-  document.getElementById('mName').value  = '';
-  document.getElementById('mBirth').value = '';
-  document.getElementById('mDeath').value = '';
+  document.getElementById('mName').value   = '';
+  document.getElementById('mBirth').value  = '';
+  document.getElementById('mDeath').value  = '';
   document.getElementById('mGender').value = 'm';
-  document.getElementById('addModal').classList.add('open');
+  addModal.classList.add('open');
   setTimeout(() => document.getElementById('mName').focus(), 50);
 }
+
 function closeModal() {
-  document.getElementById('addModal').classList.remove('open');
+  addModal.classList.remove('open');
 }
-document.getElementById('addModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 
-// Робимо функції глобальними для onclick у HTML
-window.openAddModal  = openAddModal;
-window.closeModal    = closeModal;
-window.addConnection = addConnection;
-
+// ─── Додати людину ────────────────────────────────────────────────────────────
 function addPerson() {
-  const name = document.getElementById('mName').value.trim();
-  if (!name) { document.getElementById('mName').focus(); return; }
+  const nameEl = document.getElementById('mName');
+  const name   = nameEl.value.trim();
+  if (!name) { nameEl.focus(); nameEl.style.borderColor = 'red'; return; }
+  nameEl.style.borderColor = '';
 
   const birth  = document.getElementById('mBirth').value.trim();
   const death  = document.getElementById('mDeath').value.trim();
   const gender = document.getElementById('mGender').value;
 
-  const existing = people.length;
-  const col = existing % 4;
-  const row = Math.floor(existing / 4);
+  const col = people.length % 4;
+  const row = Math.floor(people.length / 4);
 
-  const person = {
+  people.push({
     id: nextId++,
-    name,
-    birth,
-    death,
-    gender,
+    name, birth, death, gender,
     x: 40 + col * 170,
     y: 40 + row * 120,
-  };
+  });
 
-  people.push(person);
   closeModal();
   renderAll();
-  selectPerson(person.id);
-  scheduleSave();   // ← автозбереження після змін
+  selectPerson(people[people.length - 1].id);
+  scheduleSave();
 }
-window.addPerson = addPerson;
 
+// ─── Рендер ───────────────────────────────────────────────────────────────────
 function renderAll() {
   emptyHint.style.display = people.length === 0 ? 'block' : 'none';
   renderNodes();
   renderConnections();
   renderSidebar();
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function getById(id) {
+  return people.find(p => p.id === id);
 }
 
 function renderNodes() {
@@ -228,7 +241,7 @@ function renderNodes() {
     node.style.top  = p.y + 'px';
 
     const years = p.birth
-      ? (p.death ? p.birth + '–' + p.death : p.birth + ' – …')
+      ? (p.death ? `${p.birth}–${p.death}` : `${p.birth} – …`)
       : '';
 
     node.innerHTML = `
@@ -256,8 +269,8 @@ function renderConnections() {
     const nodeW = 140, nodeH = 80;
     const fx = from.x + nodeW / 2, fy = from.y + nodeH / 2;
     const tx = to.x   + nodeW / 2, ty = to.y   + nodeH / 2;
-    const mid_y = (fy + ty) / 2;
-    const d = `M${fx},${fy} C${fx},${mid_y} ${tx},${mid_y} ${tx},${ty}`;
+    const midY = (fy + ty) / 2;
+    const d = `M${fx},${fy} C${fx},${midY} ${tx},${midY} ${tx},${ty}`;
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', d);
@@ -267,58 +280,68 @@ function renderConnections() {
 }
 
 function renderSidebar() {
+  // Список людей
   const list = document.getElementById('personList');
   list.innerHTML = '';
 
   if (people.length === 0) {
     list.innerHTML = '<div style="font-size:.82rem;color:var(--muted);text-align:center;padding:8px 0">Ще нікого немає</div>';
+  } else {
+    people.forEach(p => {
+      const item  = document.createElement('div');
+      const years = p.birth ? (p.death ? `${p.birth}–${p.death}` : p.birth) : '';
+      item.className = 'person-item' + (p.id === selectedId ? ' selected' : '');
+      item.innerHTML = `
+        <div class="avatar avatar-${p.gender}">${initials(p.name)}</div>
+        <div class="person-info">
+          <div class="name">${p.name}</div>
+          ${years ? `<div class="years">${years}</div>` : ''}
+        </div>
+        <button class="person-del" title="Видалити">✕</button>
+      `;
+      item.querySelector('.person-del').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deletePerson(p.id);
+      });
+      item.addEventListener('click', () => selectPerson(p.id));
+      list.appendChild(item);
+    });
   }
 
-  people.forEach(p => {
-    const item  = document.createElement('div');
-    const years = p.birth ? (p.death ? p.birth + '–' + p.death : p.birth) : '';
-    item.className = 'person-item' + (p.id === selectedId ? ' selected' : '');
-    item.innerHTML = `
-      <div class="avatar avatar-${p.gender}">${initials(p.name)}</div>
-      <div class="person-info">
-        <div class="name">${p.name}</div>
-        ${years ? `<div class="years">${years}</div>` : ''}
-      </div>
-      <button class="person-del" title="Видалити" onclick="deletePerson(${p.id}, event)">✕</button>
-    `;
-    item.addEventListener('click', () => selectPerson(p.id));
-    list.appendChild(item);
-  });
-
+  // Дропдауни для зв'язків
   const opts = people.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-  document.getElementById('connFrom').innerHTML = opts || '<option disabled>— немає людей —</option>';
-  document.getElementById('connTo').innerHTML   = opts || '<option disabled>— немає людей —</option>';
+  const noOpt = '<option disabled>— немає людей —</option>';
+  document.getElementById('connFrom').innerHTML = opts || noOpt;
+  document.getElementById('connTo').innerHTML   = opts || noOpt;
 
+  // Список зв'язків
   const cList = document.getElementById('connectionList');
   cList.innerHTML = '';
 
-  connections.forEach((c, i) => {
-    const from = getById(c.from);
-    const to   = getById(c.to);
-    if (!from || !to) return;
-
-    const labels = { parent: 'Батько/Мати', child: 'Дитина', partner: 'Партнер', sibling: 'Брат/Сестра' };
-    const item = document.createElement('div');
-    item.className = 'connection-item';
-    item.innerHTML = `
-      <span style="font-weight:500;font-size:.82rem">${from.name}</span>
-      <span class="badge badge-${c.type}">${labels[c.type] || c.type}</span>
-      <span style="font-size:.82rem">${to.name}</span>
-      <button class="conn-del" onclick="deleteConnection(${i})" title="Видалити">✕</button>
-    `;
-    cList.appendChild(item);
-  });
-
   if (connections.length === 0) {
     cList.innerHTML = '<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:6px 0">Зв\'язків ще немає</div>';
+  } else {
+    const labels = { parent: 'Батько/Мати', child: 'Дитина', partner: 'Партнер', sibling: 'Брат/Сестра' };
+    connections.forEach((c, i) => {
+      const from = getById(c.from);
+      const to   = getById(c.to);
+      if (!from || !to) return;
+
+      const item = document.createElement('div');
+      item.className = 'connection-item';
+      item.innerHTML = `
+        <span style="font-weight:500;font-size:.82rem">${from.name}</span>
+        <span class="badge badge-${c.type}">${labels[c.type] || c.type}</span>
+        <span style="font-size:.82rem">${to.name}</span>
+        <button class="conn-del" title="Видалити">✕</button>
+      `;
+      item.querySelector('.conn-del').addEventListener('click', () => deleteConnection(i));
+      cList.appendChild(item);
+    });
   }
 }
 
+// ─── Вибір людини ─────────────────────────────────────────────────────────────
 function selectPerson(id) {
   selectedId = (selectedId === id) ? null : id;
   renderAll();
@@ -330,23 +353,22 @@ function selectPerson(id) {
 
 canvas.addEventListener('click', () => { selectedId = null; renderAll(); });
 
-function deletePerson(id, e) {
-  e?.stopPropagation();
+// ─── Видалення ────────────────────────────────────────────────────────────────
+function deletePerson(id) {
   people      = people.filter(p => p.id !== id);
   connections = connections.filter(c => c.from !== id && c.to !== id);
   if (selectedId === id) selectedId = null;
   renderAll();
   scheduleSave();
 }
-window.deletePerson = deletePerson;
 
 function deleteConnection(i) {
   connections.splice(i, 1);
   renderAll();
   scheduleSave();
 }
-window.deleteConnection = deleteConnection;
 
+// ─── Додати зв'язок ───────────────────────────────────────────────────────────
 function addConnection() {
   const from = parseInt(document.getElementById('connFrom').value);
   const to   = parseInt(document.getElementById('connTo').value);
@@ -360,13 +382,14 @@ function addConnection() {
   scheduleSave();
 }
 
+// ─── Перетягування ────────────────────────────────────────────────────────────
 function onNodeMouseDown(e) {
   if (e.button !== 0) return;
   e.preventDefault();
   e.stopPropagation();
   const id = parseInt(e.currentTarget.dataset.id);
   const p  = getById(id);
-  dragging  = { id, node: e.currentTarget };
+  dragging     = { id, node: e.currentTarget };
   dragOffset.x = e.clientX - p.x;
   dragOffset.y = e.clientY - p.y;
 }
@@ -382,47 +405,52 @@ window.addEventListener('mousemove', e => {
 });
 
 window.addEventListener('mouseup', () => {
-  if (dragging) scheduleSave();   // зберігаємо після перетягування
+  if (dragging) scheduleSave();
   dragging = null;
 });
 
+// ─── Масштаб ──────────────────────────────────────────────────────────────────
 function zoom(delta) {
   scale = Math.min(2, Math.max(0.3, scale + delta));
-  canvas.style.transform    = `scale(${scale})`;
-  canvas.style.transformOrigin = '0 0';
-  svgLines.style.transform  = `scale(${scale})`;
+  canvas.style.transform         = `scale(${scale})`;
+  canvas.style.transformOrigin   = '0 0';
+  svgLines.style.transform       = `scale(${scale})`;
   svgLines.style.transformOrigin = '0 0';
 }
+
 function resetView() {
   scale = 1;
   canvas.style.transform   = '';
   svgLines.style.transform = '';
 }
-window.zoom      = zoom;
-window.resetView = resetView;
 
+// ─── Клавіатура ───────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId && document.activeElement.tagName !== 'INPUT') {
-    deletePerson(selectedId, null);
-  }
   if (e.key === 'Escape') { selectedId = null; renderAll(); closeModal(); }
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveTree(); }
+  if ((e.key === 'Delete' || e.key === 'Backspace')
+      && selectedId
+      && document.activeElement.tagName !== 'INPUT'
+      && document.activeElement.tagName !== 'TEXTAREA') {
+    deletePerson(selectedId);
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveTree();
+  }
 });
 
-// Ctrl+S збереження + назва дерева
-document.getElementById('treeName').addEventListener('input', scheduleSave);
-
+// ─── Демо-дані (коли бекенд недоступний і немає локального збереження) ────────
 function loadDemoData() {
   people = [
-    { id: nextId++, name: 'Василь Петренко', birth: '1940', death: '2005', gender: 'm', x: 80, y: 80 },
-    { id: nextId++, name: 'Марія Петренко',  birth: '1945', death: '',     gender: 'f', x: 260, y: 80 },
-    { id: nextId++, name: 'Олексій Петренко',birth: '1968', death: '',     gender: 'm', x: 80, y: 230 },
-    { id: nextId++, name: 'Наталія Коваль',  birth: '1972', death: '',     gender: 'f', x: 260, y: 230 },
+    { id: nextId++, name: 'Василь Петренко',  birth: '1940', death: '2005', gender: 'm', x: 80,  y: 80  },
+    { id: nextId++, name: 'Марія Петренко',   birth: '1945', death: '',     gender: 'f', x: 260, y: 80  },
+    { id: nextId++, name: 'Олексій Петренко', birth: '1968', death: '',     gender: 'm', x: 80,  y: 230 },
+    { id: nextId++, name: 'Наталія Коваль',   birth: '1972', death: '',     gender: 'f', x: 260, y: 230 },
   ];
   connections = [
     { from: 1, to: 2, type: 'partner' },
-    { from: 1, to: 3, type: 'parent' },
-    { from: 2, to: 3, type: 'parent' },
+    { from: 1, to: 3, type: 'parent'  },
+    { from: 2, to: 3, type: 'parent'  },
     { from: 3, to: 4, type: 'partner' },
   ];
 }
