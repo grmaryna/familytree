@@ -4,9 +4,13 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Родовід — Увійти</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap"
+    rel="stylesheet"
+  />
+
   <link rel="stylesheet" href="signIn.css">
-   <script src="signInthemes.js"> </script>
 </head>
 
 <body>
@@ -17,141 +21,186 @@
 </nav>
 
 <main>
-  <div class="card" id="mainCard">
+  <div class="card">
 
-    <!-- TABS -->
     <div class="tabs">
-      <button class="tab active" id="tabSignin" onclick="switchTab('signin')">Увійти</button>
-      <button class="tab" id="tabRegister" onclick="switchTab('register')">Реєстрація</button>
+      <button class="tab active" id="tabSignin">
+        Увійти
+      </button>
+
+      <button class="tab" id="tabRegister">
+        Реєстрація
+      </button>
     </div>
 
-    <!-- SIGN IN FORM -->
+    <!-- SIGN IN -->
     <div class="form-body" id="signinForm">
-      <div class="form-title">З поверненням 👋</div>
-      <div class="form-sub">Увійдіть, щоб продовжити роботу зі своїм деревом</div>
+
+      <div class="form-title">
+        З поверненням 👋
+      </div>
+
+      <div class="form-sub">
+        Увійдіть, щоб продовжити роботу зі своїм деревом
+      </div>
+
+      <div class="error-banner" id="siError"></div>
 
       <div class="input-group">
         <label>Електронна пошта</label>
+
         <div class="input-wrap">
           <span class="icon">✉️</span>
-          <input type="email" id="siEmail" placeholder="name@example.com" autocomplete="email"/>
+
+          <input
+            type="email"
+            id="siEmail"
+            placeholder="name@example.com"
+          />
         </div>
-        <div class="field-error" id="siEmailErr">Введіть коректну адресу пошти</div>
+
+        <div class="field-error" id="siEmailErr">
+          Введіть коректну адресу пошти
+        </div>
       </div>
 
       <div class="input-group">
         <label>Пароль</label>
+
         <div class="input-wrap">
           <span class="icon">🔒</span>
-          <input type="password" id="siPass" placeholder="••••••••" autocomplete="current-password"/>
-          <button class="show-pass" type="button" onclick="togglePass('siPass', this)" title="Показати пароль">👁</button>
+
+          <input
+            type="password"
+            id="siPass"
+            placeholder="••••••••"
+          />
+
+          <button
+            class="show-pass"
+            type="button"
+            onclick="togglePass('siPass', this)"
+          >
+            👁
+          </button>
         </div>
-        <div class="field-error" id="siPassErr">Пароль не може бути порожнім</div>
+
+        <div class="field-error" id="siPassErr">
+          Пароль не може бути порожнім
+        </div>
       </div>
 
-      <a href="#" class="forgot" onclick="openForgot(); return false;">Забули пароль?</a>
+      <a href="#" class="forgot" id="forgotBtnLink">
+        Забули пароль?
+      </a>
 
-      <button class="btn-main" onclick="submitSignin()">Увійти</button>
+      <button class="btn-main" id="signinBtn">
+        Увійти
+      </button>
 
       <div class="divider">або</div>
 
-      <button class="btn-social" onclick="socialLogin('Google')">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+      <button class="btn-social" id="googleLoginBtn">
         Увійти через Google
-      </button>
-      <button class="btn-social" onclick="socialLogin('Facebook')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-        Увійти через Facebook
       </button>
     </div>
 
-    <!-- REGISTER FORM -->
-    <div class="form-body" id="registerForm" style="display:none">
-      <div class="form-title">Створити акаунт 🌱</div>
-      <div class="form-sub">Почніть будувати своє сімейне дерево вже сьогодні</div>
+    <!-- REGISTER -->
+    <div
+      class="form-body"
+      id="registerForm"
+      style="display:none"
+    >
+
+      <div class="form-title">
+        Створити акаунт 🌱
+      </div>
+
+      <div class="form-sub">
+        Почніть будувати своє сімейне дерево вже сьогодні
+      </div>
+
+      <div class="error-banner" id="regError"></div>
 
       <div class="input-group">
         <label>Ім'я та прізвище</label>
+
         <div class="input-wrap">
           <span class="icon">👤</span>
-          <input type="text" id="regName" placeholder="Іван Петренко" autocomplete="name"/>
+
+          <input
+            type="text"
+            id="regName"
+            placeholder="Іван Петренко"
+          />
         </div>
-        <div class="field-error" id="regNameErr">Введіть ваше ім'я</div>
       </div>
 
       <div class="input-group">
         <label>Електронна пошта</label>
+
         <div class="input-wrap">
           <span class="icon">✉️</span>
-          <input type="email" id="regEmail" placeholder="name@example.com" autocomplete="email"/>
+
+          <input
+            type="email"
+            id="regEmail"
+            placeholder="name@example.com"
+          />
         </div>
-        <div class="field-error" id="regEmailErr">Введіть коректну адресу пошти</div>
       </div>
 
       <div class="input-group">
         <label>Пароль</label>
+
         <div class="input-wrap">
           <span class="icon">🔒</span>
-          <input type="password" id="regPass" placeholder="Мінімум 6 символів" autocomplete="new-password" oninput="checkStrength(this.value)"/>
-          <button class="show-pass" type="button" onclick="togglePass('regPass', this)" title="Показати пароль">👁</button>
+
+          <input
+            type="password"
+            id="regPass"
+            placeholder="Мінімум 6 символів"
+          />
+
+          <button
+            class="show-pass"
+            type="button"
+            onclick="togglePass('regPass', this)"
+          >
+            👁
+          </button>
         </div>
-        <div class="strength-bar" id="strengthBar"><div class="strength-fill" id="strengthFill"></div></div>
-        <div class="strength-label" id="strengthLabel"></div>
-        <div class="field-error" id="regPassErr">Пароль занадто короткий (мін. 6 символів)</div>
       </div>
 
       <div class="input-group">
         <label>Підтвердіть пароль</label>
+
         <div class="input-wrap">
           <span class="icon">🔒</span>
-          <input type="password" id="regPass2" placeholder="Повторіть пароль" autocomplete="new-password"/>
-          <button class="show-pass" type="button" onclick="togglePass('regPass2', this)" title="Показати пароль">👁</button>
+
+          <input
+            type="password"
+            id="regPass2"
+            placeholder="Повторіть пароль"
+          />
         </div>
-        <div class="field-error" id="regPass2Err">Паролі не співпадають</div>
       </div>
 
-      <button class="btn-main" onclick="submitRegister()">Зареєструватись</button>
-
-      <div class="divider">або</div>
-      <button class="btn-social" onclick="socialLogin('Google')">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        Зареєструватись через Google
+      <button class="btn-main" id="registerBtn">
+        Зареєструватись
       </button>
 
-      <div class="terms">
-        Реєструючись, ви погоджуєтесь з <a href="#">Умовами використання</a> та <a href="#">Політикою конфіденційності</a>
-      </div>
-    </div>
+      <div class="divider">або</div>
 
-    <!-- SUCCESS -->
-    <div class="success-msg" id="successMsg">
-      <div class="success-icon">🎉</div>
-      <h2 id="successTitle">Ласкаво просимо!</h2>
-      <p id="successText">Ви успішно увійшли. Перейдіть до свого дерева.</p>
-      <a href="main.html">Відкрити дерево →</a>
+      <button class="btn-social" id="googleRegisterBtn">
+        Зареєструватись через Google
+      </button>
     </div>
 
   </div>
 </main>
 
-<!-- FORGOT PASSWORD MODAL -->
-<div class="modal-overlay" id="forgotModal">
-  <div class="modal">
-    <h3>Відновлення пароля 🔑</h3>
-    <p>Введіть вашу електронну адресу — ми надішлемо інструкцію для скидання пароля.</p>
-    <div class="input-group">
-      <div class="input-wrap">
-        <span class="icon">✉️</span>
-        <input type="email" id="forgotEmail" placeholder="name@example.com"/>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-sm btn-sm-outline" onclick="closeForgot()">Скасувати</button>
-      <button class="btn-sm btn-sm-primary" onclick="submitForgot()">Надіслати</button>
-    </div>
-  </div>
-</div>
+<script type="module" src="signIn.js"></script>
 
-<script src="signIn.js"></script>
 </body>
 </html>

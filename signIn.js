@@ -1,115 +1,193 @@
-function switchTab(tab) {
-    document.getElementById('signinForm').style.display = tab === 'signin' ? 'block' : 'none';
-    document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
-    document.getElementById('successMsg').classList.remove('show');
-    document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
-    document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-    clearErrors();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
+  authDomain: "family-tree-ce8a3.firebaseapp.com",
+  projectId: "family-tree-ce8a3",
+  storageBucket: "family-tree-ce8a3.firebasestorage.app",
+  messagingSenderId: "304616447045",
+  appId: "1:304616447045:web:1b98da8b6a0481c65d572c"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+
+const BASE_URL = 'http://localhost:4000/api';
+
+// ─── Після входу: синхронізувати профіль з бекендом ──────────────────────────
+async function onLoginSuccess() {
+  try {
+    const token = await auth.currentUser.getIdToken();
+
+    // Повідомляємо бекенд про нового/поточного користувача
+    await fetch(`${BASE_URL}/me`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  } catch (e) {
+    console.warn('Бекенд недоступний, продовжуємо без нього:', e.message);
   }
 
-  function togglePass(id, btn) {
-    const inp = document.getElementById(id);
-    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
-    else { inp.type = 'password'; btn.textContent = '👁'; }
+  window.location.href = 'main.html';
+}
+
+// ─── Таби ─────────────────────────────────────────────────────────────────────
+const signinForm  = document.getElementById('signinForm');
+const registerForm = document.getElementById('registerForm');
+const tabSignin   = document.getElementById('tabSignin');
+const tabRegister = document.getElementById('tabRegister');
+
+tabSignin.onclick = () => {
+  signinForm.style.display   = 'block';
+  registerForm.style.display = 'none';
+  tabSignin.classList.add('active');
+  tabRegister.classList.remove('active');
+};
+
+tabRegister.onclick = () => {
+  signinForm.style.display   = 'none';
+  registerForm.style.display = 'block';
+  tabRegister.classList.add('active');
+  tabSignin.classList.remove('active');
+};
+
+// ─── Показ пароля ─────────────────────────────────────────────────────────────
+window.togglePass = function(id, btn) {
+  const input = document.getElementById(id);
+  input.type  = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁' : '🙈';
+};
+
+// ─── Вхід ─────────────────────────────────────────────────────────────────────
+document.getElementById('signinBtn').onclick = async () => {
+  const email    = document.getElementById('siEmail').value.trim();
+  const password = document.getElementById('siPass').value;
+  const errBanner = document.getElementById('siError');
+
+  errBanner.textContent = '';
+  errBanner.classList.remove('show');
+
+  if (!email || !password) {
+    errBanner.textContent = 'Заповніть всі поля';
+    errBanner.classList.add('show');
+    return;
   }
 
-  function showErr(id, show) {
-    const el = document.getElementById(id);
-    el.classList.toggle('show', show);
-    const inp = el.previousElementSibling?.querySelector('input') || el.previousElementSibling;
-    if (inp && inp.tagName === 'INPUT') inp.classList.toggle('error', show);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    await onLoginSuccess();
+  } catch (error) {
+    errBanner.textContent = friendlyError(error.code);
+    errBanner.classList.add('show');
   }
-  function clearErrors() {
-    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
-    document.querySelectorAll('input').forEach(i => i.classList.remove('error'));
-  }
-  function isEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+};
 
-  function checkStrength(val) {
-    const bar = document.getElementById('strengthBar');
-    const fill = document.getElementById('strengthFill');
-    const label = document.getElementById('strengthLabel');
-    if (!val) { bar.classList.remove('show'); label.classList.remove('show'); return; }
-    bar.classList.add('show'); label.classList.add('show');
-    let score = 0;
-    if (val.length >= 6) score++;
-    if (val.length >= 10) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-    const levels = [
-      { w: '20%', bg: '#e05555', text: 'Дуже слабкий' },
-      { w: '40%', bg: '#e08040', text: 'Слабкий' },
-      { w: '60%', bg: '#d4aa20', text: 'Середній' },
-      { w: '80%', bg: '#5a9f6a', text: 'Надійний' },
-      { w: '100%', bg: '#2e7a40', text: 'Дуже надійний' },
-    ];
-    const lvl = levels[Math.min(score - 1, 4)] || levels[0];
-    fill.style.width = lvl.w;
-    fill.style.background = lvl.bg;
-    label.textContent = lvl.text;
-    label.style.color = lvl.bg;
+// ─── Реєстрація ───────────────────────────────────────────────────────────────
+document.getElementById('registerBtn').onclick = async () => {
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPass').value;
+  const password2 = document.getElementById('regPass2').value;
+  const errBanner = document.getElementById('regError');
+
+  errBanner.textContent = '';
+  errBanner.classList.remove('show');
+
+  if (!name || !email || !password) {
+    errBanner.textContent = "Заповніть всі поля";
+    errBanner.classList.add('show');
+    return;
   }
 
-  function submitSignin() {
-    clearErrors();
-    const email = document.getElementById('siEmail').value.trim();
-    const pass = document.getElementById('siPass').value;
-    let ok = true;
-    if (!isEmail(email)) { showErr('siEmailErr', true); ok = false; }
-    if (!pass) { showErr('siPassErr', true); ok = false; }
-    if (!ok) return;
-    // Simulate login
-    showSuccess('З поверненням!', 'Ви успішно увійшли. Перейдіть до свого дерева.');
+  if (password !== password2) {
+    errBanner.textContent = "Паролі не співпадають";
+    errBanner.classList.add('show');
+    return;
   }
 
-  function submitRegister() {
-    clearErrors();
-    const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const pass = document.getElementById('regPass').value;
-    const pass2 = document.getElementById('regPass2').value;
-    let ok = true;
-    if (!name) { showErr('regNameErr', true); ok = false; }
-    if (!isEmail(email)) { showErr('regEmailErr', true); ok = false; }
-    if (pass.length < 6) { showErr('regPassErr', true); ok = false; }
-    if (pass !== pass2) { showErr('regPass2Err', true); ok = false; }
-    if (!ok) return;
-    showSuccess('Вітаємо, ' + name.split(' ')[0] + '! 🌱', 'Ваш акаунт створено. Почніть будувати перше сімейне дерево.');
+  if (password.length < 6) {
+    errBanner.textContent = "Пароль мінімум 6 символів";
+    errBanner.classList.add('show');
+    return;
   }
 
-  function showSuccess(title, text) {
-    document.getElementById('signinForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('successTitle').textContent = title;
-    document.getElementById('successText').textContent = text;
-    document.getElementById('successMsg').classList.add('show');
-  }
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-  function socialLogin(provider) {
-    showSuccess('Ласкаво просимо!', 'Ви увійшли через ' + provider + '. Перейдіть до свого дерева.');
-  }
+    // Зберігаємо ім'я в Firebase Auth
+    await updateProfile(userCredential.user, { displayName: name });
 
-  function openForgot() { document.getElementById('forgotModal').classList.add('open'); }
-  function closeForgot() { document.getElementById('forgotModal').classList.remove('open'); }
-  document.getElementById('forgotModal').addEventListener('click', function(e) {
-    if (e.target === this) closeForgot();
-  });
-  function submitForgot() {
-    const email = document.getElementById('forgotEmail').value.trim();
-    if (!isEmail(email)) { document.getElementById('forgotEmail').classList.add('error'); return; }
-    closeForgot();
-    // Show toast
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 24px;border-radius:50px;font-size:.9rem;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999;animation:cardIn .3s ease';
-    toast.textContent = '✉️ Лист надіслано на ' + email;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const active = document.getElementById('tabSignin').classList.contains('active');
-      if (active) submitSignin(); else submitRegister();
+    // Зберігаємо профіль на бекенді
+    try {
+      const token = await userCredential.user.getIdToken();
+      await fetch(`${BASE_URL}/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ displayName: name })
+      });
+    } catch (e) {
+      console.warn('Бекенд недоступний:', e.message);
     }
-  });
+
+    window.location.href = 'main.html';
+
+  } catch (error) {
+    errBanner.textContent = friendlyError(error.code);
+    errBanner.classList.add('show');
+  }
+};
+
+// ─── Google ───────────────────────────────────────────────────────────────────
+async function googleLogin() {
+  try {
+    await signInWithPopup(auth, googleProvider);
+    await onLoginSuccess();
+  } catch (error) {
+    alert(friendlyError(error.code));
+  }
+}
+
+document.getElementById('googleLoginBtn').onclick   = googleLogin;
+document.getElementById('googleRegisterBtn').onclick = googleLogin;
+
+// ─── Відновлення пароля ───────────────────────────────────────────────────────
+document.getElementById('forgotBtnLink').onclick = async (e) => {
+  e.preventDefault();
+  const email = prompt('Введіть email для відновлення пароля');
+  if (!email) return;
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert('✅ Лист для відновлення надіслано на ' + email);
+  } catch (error) {
+    alert(friendlyError(error.code));
+  }
+};
+
+// ─── Людські повідомлення про помилки ─────────────────────────────────────────
+function friendlyError(code) {
+  const messages = {
+    'auth/user-not-found':      'Користувача з таким email не існує',
+    'auth/wrong-password':      'Невірний пароль',
+    'auth/email-already-in-use':'Цей email вже зареєстрований',
+    'auth/invalid-email':       'Невірний формат email',
+    'auth/too-many-requests':   'Забагато спроб. Зачекайте хвилину',
+    'auth/weak-password':       'Пароль занадто простий',
+    'auth/invalid-credential':  'Невірний email або пароль',
+    'auth/popup-closed-by-user':'Вхід через Google скасовано',
+  };
+  return messages[code] || 'Сталася помилка. Спробуйте ще раз';
+}
