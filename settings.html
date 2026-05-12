@@ -21,7 +21,6 @@
 
   <div class="settings-layout">
 
-    <!-- SIDEBAR NAV -->
     <nav class="settings-nav">
       <button class="nav-item active" onclick="showSection('profile', this)"><span class="nav-icon">👤</span> <span data-i18n="nav.profile">Профіль</span></button>
       <button class="nav-item" onclick="showSection('appearance', this)"><span class="nav-icon">🎨</span> <span data-i18n="nav.appearance">Вигляд</span></button>
@@ -31,10 +30,8 @@
       <button class="nav-item" onclick="showSection('danger', this)"><span class="nav-icon">⚠️</span> <span data-i18n="nav.danger">Небезпечна зона</span></button>
     </nav>
 
-    <!-- CONTENT -->
     <div class="settings-content">
 
-      <!-- PROFILE -->
       <div class="section active" id="sec-profile">
         <div class="section-title" data-i18n="profile.title">Профіль</div>
         <div class="section-desc" data-i18n="profile.desc">Ваше ім'я та особиста інформація</div>
@@ -110,7 +107,6 @@
         </div>
       </div>
 
-      <!-- APPEARANCE -->
       <div class="section" id="sec-appearance">
         <div class="section-title" data-i18n="appear.title">Вигляд</div>
         <div class="section-desc" data-i18n="appear.desc">Тема та мова інтерфейсу</div>
@@ -180,7 +176,6 @@
         </div>
       </div>
 
-      <!-- NOTIFICATIONS -->
       <div class="section" id="sec-notifications">
         <div class="section-title" data-i18n="notif.title">Сповіщення</div>
         <div class="section-desc" data-i18n="notif.desc">Керуйте тим, що і як вам надходить</div>
@@ -226,7 +221,6 @@
         </div>
       </div>
 
-      <!-- PRIVACY -->
       <div class="section" id="sec-privacy">
         <div class="section-title" data-i18n="priv.title">Приватність</div>
         <div class="section-desc" data-i18n="priv.desc">Контролюйте, хто що бачить</div>
@@ -277,7 +271,6 @@
         </div>
       </div>
 
-      <!-- DATA -->
       <div class="section" id="sec-data">
         <div class="section-title" data-i18n="data.title">Дані та експорт</div>
         <div class="section-desc" data-i18n="data.desc">Управляйте своїми даними та деревами</div>
@@ -318,7 +311,6 @@
         </label>
       </div>
 
-      <!-- DANGER ZONE -->
       <div class="section" id="sec-danger">
         <div class="section-title" style="color:var(--red)">⚠️ <span data-i18n="danger.title">Небезпечна зона</span></div>
         <div class="section-desc" data-i18n="danger.desc">Незворотні дії — будьте обережні</div>
@@ -348,11 +340,10 @@
         </div>
       </div>
 
-    </div><!-- /settings-content -->
-  </div><!-- /settings-layout -->
+    </div>
+  </div>
 </div>
 
-<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="dangerModal">
   <div class="modal">
     <h3 id="dangerTitle" data-i18n="modal.confirm">Підтвердіть дію</h3>
@@ -368,7 +359,6 @@
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script type="module" src="settings.js"></script>

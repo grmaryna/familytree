@@ -9,11 +9,11 @@ treeList.addEventListener("click", () => {
 });
 
 const signIn = document.getElementById("signIn");
-signIn.addEventListener("click", () => {          // ← was: treeList
+signIn.addEventListener("click", () => {
   window.location.href = "./signIn.html";
 });
 
 const seatings = document.getElementById("seatings");
-seatings.addEventListener("click", () => {        // ← was: treeList
+seatings.addEventListener("click", () => {
   window.location.href = "./seatings.html";
 });

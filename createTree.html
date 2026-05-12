@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="createTree.css">
 
-  <!-- Тема застосовується ДО рендеру, щоб не було мерехтіння -->
   <script>
     (function() {
       var themes = {
@@ -29,7 +28,6 @@
 
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <a href="main.html" class="logo">Родо<span>від</span></a>
   <div class="topbar-center">
@@ -43,9 +41,7 @@
 
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-
     <div class="sidebar-section">
       <div class="sidebar-title">🌿 Учасники дерева</div>
       <button class="btn btn-outline" style="width:100%;margin-bottom:12px" id="btnOpenModal2">+ Нова людина</button>
@@ -73,12 +69,10 @@
     </div>
 
     <div class="sidebar-section">
-      <div class="hint">💡 Перетягуйте картки на полотні. Виділіть людину кліком — зв'язки підсвітяться.</div>
+      <div class="hint">💡 Перетягуйте картки на полотні. Клік на картку — відкриє детальний профіль.</div>
     </div>
-
   </aside>
 
-  <!-- CANVAS -->
   <div class="canvas-wrap" id="canvasWrap">
     <svg id="svgLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible"></svg>
     <div id="canvas">
@@ -88,45 +82,196 @@
       </div>
     </div>
     <div class="zoom-controls">
-      <div class="zoom-btn" id="btnZoomIn">+</div>
-      <div class="zoom-btn" id="btnZoomOut">−</div>
-      <div class="zoom-btn" id="btnZoomReset">⌂</div>
+      <div class="zoom-btn" id="btnZoomIn" title="Збільшити">+</div>
+      <div class="zoom-btn" id="btnZoomOut" title="Зменшити">−</div>
+      <div class="zoom-btn" id="btnZoomReset" title="Скинути">⌂</div>
     </div>
   </div>
+
+  <div class="profile-panel" id="profilePanel">
+    <div class="profile-panel-header">
+      <span id="ppTitle">Профіль</span>
+      <button id="btnCloseProfile" title="Закрити">✕</button>
+    </div>
+    <div class="profile-panel-body" id="ppBody"></div>
+  </div>
+
 </div>
 
-<!-- ADD PERSON MODAL -->
 <div class="modal-overlay" id="addModal">
-  <div class="modal">
-    <h2>Нова людина</h2>
-    <div class="input-group">
-      <label>Ім'я *</label>
-      <input type="text" id="mName" placeholder="Іван Петренко"/>
+  <div class="modal modal-wide">
+
+    <div class="modal-header">
+      <h2 id="modalTitle">Нова людина</h2>
+      <button class="modal-close" id="btnCloseModal">✕</button>
     </div>
-    <div class="input-group">
-      <label>Рік народження</label>
-      <input type="text" id="mBirth" placeholder="1945"/>
+
+    <div class="modal-photo-row">
+      <div class="photo-upload-wrap">
+        <div class="photo-circle" id="photoPreview">
+          <span id="photoInitials">?</span>
+          <img id="photoImg" alt="" style="display:none"/>
+          <div class="photo-overlay">📷</div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none"/>
+        <div class="photo-hint">Натисніть для фото</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="input-group">
+          <label>Ім'я та прізвище *</label>
+          <input type="text" id="mName" placeholder="Іван Петренко"/>
+        </div>
+        <div class="input-row-2">
+          <div class="input-group">
+            <label>Стать</label>
+            <select id="mGender">
+              <option value="m">Чоловік</option>
+              <option value="f">Жінка</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Статус</label>
+            <select id="mAlive">
+              <option value="alive">Живий/а</option>
+              <option value="dead">Помер/ла</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="input-group">
-      <label>Рік смерті (якщо є)</label>
-      <input type="text" id="mDeath" placeholder="2010"/>
+
+    <div class="modal-tabs" id="modalTabs">
+      <button class="mtab active" data-tab="tab-general">📋 Загальні</button>
+      <button class="mtab" data-tab="tab-social">👔 Соц. статус</button>
+      <button class="mtab" data-tab="tab-education">🎓 Освіта</button>
+      <button class="mtab" data-tab="tab-notes">📝 Нотатки</button>
     </div>
-    <div class="input-group">
-      <label>Стать</label>
-      <select id="mGender">
-        <option value="m">Чоловік</option>
-        <option value="f">Жінка</option>
-      </select>
+
+    <div class="mtab-content active" id="tab-general">
+      <div class="input-row-2">
+        <div class="input-group">
+          <label>Рік народження</label>
+          <input type="text" id="mBirth" placeholder="1945"/>
+        </div>
+        <div class="input-group">
+          <label>Місце народження</label>
+          <input type="text" id="mBirthPlace" placeholder="Київ, Україна"/>
+        </div>
+      </div>
+      <div class="input-row-2" id="deathFields">
+        <div class="input-group">
+          <label>Рік смерті</label>
+          <input type="text" id="mDeath" placeholder="2010"/>
+        </div>
+        <div class="input-group">
+          <label>Місце смерті</label>
+          <input type="text" id="mDeathPlace" placeholder="Харків, Україна"/>
+        </div>
+      </div>
+      <div class="input-row-2">
+        <div class="input-group">
+          <label>Національність</label>
+          <input type="text" id="mNationality" placeholder="Українець/Українка"/>
+        </div>
+        <div class="input-group">
+          <label>Релігія</label>
+          <input type="text" id="mReligion" placeholder="Православна"/>
+        </div>
+      </div>
     </div>
+
+    <div class="mtab-content" id="tab-social">
+      <div class="input-group">
+        <label>Професія / Рід занять</label>
+        <input type="text" id="mOccupation" placeholder="Лікар, вчитель, інженер..."/>
+      </div>
+      <div class="input-row-2">
+        <div class="input-group">
+          <label>Сімейний стан</label>
+          <select id="mMarital">
+            <option value="">— не вказано —</option>
+            <option value="single">Неодружений/а</option>
+            <option value="married">Одружений/а</option>
+            <option value="divorced">Розлучений/а</option>
+            <option value="widowed">Вдівець/Вдова</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Соціальний стан</label>
+          <select id="mSocialClass">
+            <option value="">— не вказано —</option>
+            <option value="peasant">Селянин/Селянка</option>
+            <option value="worker">Робітник/Робітниця</option>
+            <option value="intelligentsia">Інтелігенція</option>
+            <option value="military">Військовий/а</option>
+            <option value="clergy">Духовенство</option>
+            <option value="nobility">Дворянство</option>
+            <option value="merchant">Купець/Купчиха</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Місце проживання</label>
+        <input type="text" id="mLocation" placeholder="Вінниця, Україна"/>
+      </div>
+      <div class="input-group">
+        <label>Нагороди / Звання</label>
+        <input type="text" id="mAwards" placeholder="Орден Слави, Заслужений лікар..."/>
+      </div>
+    </div>
+
+    <div class="mtab-content" id="tab-education">
+      <div class="input-group">
+        <label>Рівень освіти</label>
+        <select id="mEduLevel">
+          <option value="">— не вказано —</option>
+          <option value="none">Без освіти</option>
+          <option value="primary">Початкова</option>
+          <option value="secondary">Середня</option>
+          <option value="vocational">Професійно-технічна</option>
+          <option value="higher">Вища</option>
+          <option value="postgrad">Аспірантура / Докторантура</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Навчальний заклад</label>
+        <input type="text" id="mSchool" placeholder="КПІ, Київський університет..."/>
+      </div>
+      <div class="input-row-2">
+        <div class="input-group">
+          <label>Рік вступу</label>
+          <input type="text" id="mEduFrom" placeholder="1965"/>
+        </div>
+        <div class="input-group">
+          <label>Рік закінчення</label>
+          <input type="text" id="mEduTo" placeholder="1970"/>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Спеціальність</label>
+        <input type="text" id="mSpecialty" placeholder="Медицина, Право, Архітектура..."/>
+      </div>
+    </div>
+
+    <div class="mtab-content" id="tab-notes">
+      <div class="input-group">
+        <label>Біографічні нотатки</label>
+        <textarea id="mNotes" rows="6" placeholder="Розкажіть більше: спогади, важливі події, цікаві факти..."></textarea>
+      </div>
+      <div class="input-group">
+        <label>Джерела / Документи</label>
+        <input type="text" id="mSources" placeholder="Архів, метрична книга, сімейні документи..."/>
+      </div>
+    </div>
+
     <div class="modal-actions">
-      <button class="btn btn-ghost" id="btnCloseModal">Скасувати</button>
-      <button class="btn btn-primary" id="btnAddPerson">Додати</button>
+      <button class="btn btn-ghost" id="btnCancelModal">Скасувати</button>
+      <button class="btn btn-primary" id="btnSavePerson">Додати</button>
     </div>
+
   </div>
 </div>
 
-<!-- Головний скрипт як ES-модуль -->
 <script type="module" src="createTree.js"></script>
-
 </body>
 </html>

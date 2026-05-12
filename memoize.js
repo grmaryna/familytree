@@ -155,8 +155,7 @@ function memoize(fn, options = {}) {
   };
 
 memoized.delete = (...args) => cache.delete(keySerializer(...args));
- 
-  /** Stop background TTL sweep (call when the memoized fn is no longer needed). */
+
   memoized.destroy = () => {
     if (_sweepInterval !== null) clearInterval(_sweepInterval);
   };
