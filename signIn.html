@@ -4,203 +4,180 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Родовід — Увійти</title>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap"
-    rel="stylesheet"
-  />
-
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="signIn.css">
+
+  <!-- Тема застосовується до рендеру — без мерехтіння -->
+  <script>
+    (function() {
+      // Повний набір змінних для кожної теми (включно з --shadow, --red, --red-pale)
+      var themes = {
+        forest: {
+          '--bg':'#f5f0e8','--bg2':'#ede6d6','--green':'#3a6b4a',
+          '--green-light':'#5a8f6a','--green-pale':'#d4e8da',
+          '--brown':'#7a5c3a','--text':'#2c2218','--muted':'#7a6a55',
+          '--border':'#d8cdb8','--white':'#fff',
+          '--shadow':'0 8px 32px rgba(60,40,10,0.13)',
+          '--red':'#c94040','--red-pale':'#fdeaea',
+        },
+        ocean: {
+          '--bg':'#e8f2f8','--bg2':'#d8eaf4','--green':'#2a6080',
+          '--green-light':'#3a80a8','--green-pale':'#c8e0ee',
+          '--brown':'#3a6878','--text':'#0f2a38','--muted':'#4a7088',
+          '--border':'#b8d4e4','--white':'#fff',
+          '--shadow':'0 8px 32px rgba(10,40,70,0.15)',
+          '--red':'#c94040','--red-pale':'#fdeaea',
+        },
+        autumn: {
+          '--bg':'#fdf3e8','--bg2':'#f5e6d0','--green':'#a04020',
+          '--green-light':'#c05030','--green-pale':'#fde0cc',
+          '--brown':'#8a5020','--text':'#2a1408','--muted':'#8a5a3a',
+          '--border':'#e0c8a8','--white':'#fff',
+          '--shadow':'0 8px 32px rgba(80,30,10,0.14)',
+          '--red':'#c94040','--red-pale':'#fdeaea',
+        },
+        night: {
+          '--bg':'#1a1f2e','--bg2':'#141824','--green':'#4a7acf',
+          '--green-light':'#6a9aef','--green-pale':'#1e2d4a',
+          '--brown':'#7a8aaa','--text':'#e0e8f8','--muted':'#8090b0',
+          '--border':'#2a3550','--white':'#1e2438',
+          '--shadow':'0 8px 32px rgba(0,0,0,0.4)',
+          '--red':'#e05555','--red-pale':'#2d1a1a',
+        },
+        rose: {
+          '--bg':'#fdf0f0','--bg2':'#f5e2e2','--green':'#a04060',
+          '--green-light':'#c05070','--green-pale':'#fde0e8',
+          '--brown':'#8a4050','--text':'#280a14','--muted':'#8a4a58',
+          '--border':'#e0c0c8','--white':'#fff',
+          '--shadow':'0 8px 32px rgba(80,20,40,0.13)',
+          '--red':'#c94040','--red-pale':'#fdeaea',
+        },
+        sand: {
+          '--bg':'#f5f0e0','--bg2':'#ede4cc','--green':'#7a6030',
+          '--green-light':'#9a7840','--green-pale':'#e8dfc0',
+          '--brown':'#6a5028','--text':'#28200c','--muted':'#7a6840',
+          '--border':'#d8c898','--white':'#fff',
+          '--shadow':'0 8px 32px rgba(60,40,10,0.13)',
+          '--red':'#c94040','--red-pale':'#fdeaea',
+        },
+      };
+      var t = localStorage.getItem('rodo-theme');
+      if (t && themes[t]) {
+        for (var k in themes[t]) {
+          document.documentElement.style.setProperty(k, themes[t][k]);
+        }
+      }
+    })();
+  </script>
 </head>
 
 <body>
 
 <nav>
   <a href="main.html" class="logo">Родо<span>від</span></a>
-  <a href="main.html" class="back-link">← Повернутись</a>
+  <a href="main.html" class="back-link" data-i18n="signin.backLink">← Повернутись</a>
 </nav>
 
 <main>
   <div class="card">
 
     <div class="tabs">
-      <button class="tab active" id="tabSignin">
-        Увійти
-      </button>
-
-      <button class="tab" id="tabRegister">
-        Реєстрація
-      </button>
+      <button class="tab active" id="tabSignin" data-i18n="signin.tabLogin">Увійти</button>
+      <button class="tab" id="tabRegister" data-i18n="signin.tabRegister">Реєстрація</button>
     </div>
 
     <!-- SIGN IN -->
     <div class="form-body" id="signinForm">
-
-      <div class="form-title">
-        З поверненням 👋
-      </div>
-
-      <div class="form-sub">
-        Увійдіть, щоб продовжити роботу зі своїм деревом
-      </div>
+      <div class="form-title" data-i18n="signin.loginTitle">З поверненням 👋</div>
+      <div class="form-sub" data-i18n="signin.loginSub">Увійдіть, щоб продовжити роботу зі своїм деревом</div>
 
       <div class="error-banner" id="siError"></div>
 
       <div class="input-group">
-        <label>Електронна пошта</label>
-
+        <label data-i18n="signin.email">Електронна пошта</label>
         <div class="input-wrap">
           <span class="icon">✉️</span>
-
-          <input
-            type="email"
-            id="siEmail"
-            placeholder="name@example.com"
-          />
+          <input type="email" id="siEmail" placeholder="name@example.com"/>
         </div>
-
-        <div class="field-error" id="siEmailErr">
-          Введіть коректну адресу пошти
-        </div>
+        <div class="field-error" id="siEmailErr">Введіть коректну адресу пошти</div>
       </div>
 
       <div class="input-group">
-        <label>Пароль</label>
-
+        <label data-i18n="signin.password">Пароль</label>
         <div class="input-wrap">
           <span class="icon">🔒</span>
-
-          <input
-            type="password"
-            id="siPass"
-            placeholder="••••••••"
-          />
-
-          <button
-            class="show-pass"
-            type="button"
-            onclick="togglePass('siPass', this)"
-          >
-            👁
-          </button>
+          <input type="password" id="siPass" placeholder="••••••••"/>
+          <button class="show-pass" type="button" onclick="togglePass('siPass', this)">👁</button>
         </div>
-
-        <div class="field-error" id="siPassErr">
-          Пароль не може бути порожнім
-        </div>
+        <div class="field-error" id="siPassErr">Пароль не може бути порожнім</div>
       </div>
 
-      <a href="#" class="forgot" id="forgotBtnLink">
-        Забули пароль?
-      </a>
+      <a href="#" class="forgot" id="forgotBtnLink" data-i18n="signin.forgot">Забули пароль?</a>
 
-      <button class="btn-main" id="signinBtn">
-        Увійти
-      </button>
+      <button class="btn-main" id="signinBtn" data-i18n="signin.btnLogin">Увійти</button>
 
-      <div class="divider">або</div>
+      <div class="divider" data-i18n="signin.orDivider">або</div>
 
-      <button class="btn-social" id="googleLoginBtn">
-        Увійти через Google
-      </button>
+      <button class="btn-social" id="googleLoginBtn" data-i18n="signin.googleLogin">Увійти через Google</button>
     </div>
 
     <!-- REGISTER -->
-    <div
-      class="form-body"
-      id="registerForm"
-      style="display:none"
-    >
-
-      <div class="form-title">
-        Створити акаунт 🌱
-      </div>
-
-      <div class="form-sub">
-        Почніть будувати своє сімейне дерево вже сьогодні
-      </div>
+    <div class="form-body" id="registerForm" style="display:none">
+      <div class="form-title" data-i18n="signin.regTitle">Створити акаунт 🌱</div>
+      <div class="form-sub" data-i18n="signin.regSub">Почніть будувати своє сімейне дерево вже сьогодні</div>
 
       <div class="error-banner" id="regError"></div>
 
       <div class="input-group">
-        <label>Ім'я та прізвище</label>
-
+        <label data-i18n="signin.name">Ім'я та прізвище</label>
         <div class="input-wrap">
           <span class="icon">👤</span>
-
-          <input
-            type="text"
-            id="regName"
-            placeholder="Іван Петренко"
-          />
+          <input type="text" id="regName" placeholder="Іван Петренко"/>
         </div>
       </div>
 
       <div class="input-group">
-        <label>Електронна пошта</label>
-
+        <label data-i18n="signin.email2">Електронна пошта</label>
         <div class="input-wrap">
           <span class="icon">✉️</span>
-
-          <input
-            type="email"
-            id="regEmail"
-            placeholder="name@example.com"
-          />
+          <input type="email" id="regEmail" placeholder="name@example.com"/>
         </div>
       </div>
 
       <div class="input-group">
-        <label>Пароль</label>
-
+        <label data-i18n="signin.password2">Пароль</label>
         <div class="input-wrap">
           <span class="icon">🔒</span>
-
-          <input
-            type="password"
-            id="regPass"
-            placeholder="Мінімум 6 символів"
-          />
-
-          <button
-            class="show-pass"
-            type="button"
-            onclick="togglePass('regPass', this)"
-          >
-            👁
-          </button>
+          <input type="password" id="regPass" placeholder="Мінімум 6 символів"/>
+          <button class="show-pass" type="button" onclick="togglePass('regPass', this)">👁</button>
         </div>
       </div>
 
       <div class="input-group">
-        <label>Підтвердіть пароль</label>
-
+        <label data-i18n="signin.confirm">Підтвердіть пароль</label>
         <div class="input-wrap">
           <span class="icon">🔒</span>
-
-          <input
-            type="password"
-            id="regPass2"
-            placeholder="Повторіть пароль"
-          />
+          <input type="password" id="regPass2" placeholder="Повторіть пароль"/>
         </div>
       </div>
 
-      <button class="btn-main" id="registerBtn">
-        Зареєструватись
-      </button>
+      <button class="btn-main" id="registerBtn" data-i18n="signin.btnRegister">Зареєструватись</button>
 
-      <div class="divider">або</div>
+      <div class="divider" data-i18n="signin.orDivider">або</div>
 
-      <button class="btn-social" id="googleRegisterBtn">
-        Зареєструватись через Google
-      </button>
+      <button class="btn-social" id="googleRegisterBtn" data-i18n="signin.googleReg">Зареєструватись через Google</button>
     </div>
 
   </div>
 </main>
 
 <script type="module" src="signIn.js"></script>
+
+<!-- Підключаємо переклади після завантаження DOM -->
+<script type="module">
+  import { applyStoredLang } from './rodo-shared.js';
+  applyStoredLang();
+</script>
 
 </body>
 </html>

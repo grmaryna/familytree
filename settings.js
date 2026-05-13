@@ -369,13 +369,13 @@ function selectLang(el) {
 function applyLang() {
   const selected = document.querySelector('.lang-option.selected');
   if (!selected) return;
-  const flags = { '🇺🇦': 'uk', '🇬🇧': 'en', '🇩🇪': 'de', '🇵🇱': 'pl' };
+  const flags = { '🇺🇦': 'uk', '🇬🇧': 'en' };
   const flagEl = selected.querySelector('.lang-flag');
   const code = flags[flagEl ? flagEl.textContent.trim() : '🇺🇦'] || 'uk';
   currentLang = code;
   applyTranslations(code);
   localStorage.setItem('rodo-lang', code);
-  const langNames = { uk: 'Українська', en: 'English', de: 'Deutsch', pl: 'Polski' };
+  const langNames = { uk: 'Українська', en: 'English' };
   showToast(T('toast.langSaved').replace('{name}', langNames[code]));
 }
 
@@ -408,7 +408,7 @@ function friendlyError(code) {
   // Мова
   const savedLang = localStorage.getItem('rodo-lang') || 'uk';
   currentLang = savedLang;
-  const flagMap = { uk: '🇺🇦', en: '🇬🇧', de: '🇩🇪', pl: '🇵🇱' };
+  const flagMap = { uk: '🇺🇦', en: '🇬🇧' };
   document.querySelectorAll('.lang-option').forEach(l => {
     const flag = l.querySelector('.lang-flag');
     if (flag) l.classList.toggle('selected', flag.textContent.trim() === flagMap[savedLang]);

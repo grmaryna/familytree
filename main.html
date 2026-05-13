@@ -7,7 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="main.css">
 
-<script src="mainthemes.js" ></script>
+  <!-- Тема і мова застосовуються до рендеру — без мерехтіння -->
+  <script src="mainthemes.js"></script>
 </head>
 <body>
   <div class="bg-deco"></div>
@@ -29,17 +30,17 @@
       </svg>
     </div>
 
-    <h1>Збережіть історію<br/>своєї <em>родини</em></h1>
-    <p>Створюйте, досліджуйте та діліться сімейними деревами. Зв'язуйте покоління в одну живу карту.</p>
+    <h1 data-i18n="main.heroTitle">Збережіть пам'ять свого роду</h1>
+    <p data-i18n="main.heroSub">Будуйте генеалогічне дерево, зберігайте фото та біографії, зв'язуйте покоління.</p>
 
     <div class="btn-group">
-      <a href="viewtree.html" class="btn btn-primary">
-        🌳 Моє дерево
+      <a href="viewtree.html" class="btn btn-primary" data-i18n="main.btnMyTrees">
+        🌿 Моє дерево
       </a>
       <a href="settings.html" class="btn btn-outline">
-        ⚙️ Налаштування
+        ⚙️ <span data-i18n="nav.settings">Налаштування</span>
       </a>
-      <a href="signIn.html" class="btn btn-ghost">
+      <a href="signIn.html" class="btn btn-ghost" data-i18n="main.btnSignIn">
         Увійти
       </a>
     </div>
@@ -48,19 +49,25 @@
   <section class="features">
     <div class="feature-card">
       <div class="feature-icon">👤</div>
-      <h3>Додавайте людей</h3>
-      <p>Легко вносьте нових членів з фото та деталями</p>
+      <h3 data-i18n="main.feat1Title">Необмежені покоління</h3>
+      <p data-i18n="main.feat1Desc">Додавайте стільки предків та нащадків, скільки потрібно.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🔗</div>
-      <h3>Зв'язки</h3>
-      <p>Визначайте батьків, дітей та партнерів</p>
+      <h3 data-i18n="main.feat2Title">Хмарне збереження</h3>
+      <p data-i18n="main.feat2Desc">Ваші дані завжди в безпеці та доступні з будь-якого пристрою.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🗺️</div>
-      <h3>Візуальна карта</h3>
-      <p>Переміщуйте та організуйте дерево як вам зручно</p>
+      <h3 data-i18n="main.feat3Title">Зручний редактор</h3>
+      <p data-i18n="main.feat3Desc">Перетягуйте картки, додавайте фото, встановлюйте зв'язки.</p>
     </div>
   </section>
+
+  <script type="module">
+    import { applyStoredTheme, applyStoredLang } from './rodo-shared.js';
+    applyStoredTheme();
+    applyStoredLang();
+  </script>
 </body>
 </html>

@@ -34,8 +34,8 @@
     <input class="tree-name" value="Моє сімейне дерево" id="treeName" spellcheck="false"/>
   </div>
   <div class="topbar-actions">
-    <button class="btn btn-outline btn-sm" id="btnOpenModal">➕ Додати людину</button>
-    <button class="btn btn-primary btn-sm" id="saveBtnMain">💾 Зберегти</button>
+    <button class="btn btn-outline btn-sm" id="btnOpenModal" data-i18n="ct.addPerson">➕ Додати людину</button>
+    <button class="btn btn-primary btn-sm" id="saveBtnMain" data-i18n="ct.save">💾 Зберегти</button>
   </div>
 </div>
 
@@ -43,13 +43,13 @@
 
   <aside class="sidebar">
     <div class="sidebar-section">
-      <div class="sidebar-title">🌿 Учасники дерева</div>
-      <button class="btn btn-outline" style="width:100%;margin-bottom:12px" id="btnOpenModal2">+ Нова людина</button>
+      <div class="sidebar-title" data-i18n="ct.members">🌿 Учасники дерева</div>
+      <button class="btn btn-outline" style="width:100%;margin-bottom:12px" id="btnOpenModal2" data-i18n="ct.newPerson">+ Нова людина</button>
       <div class="person-list" id="personList"></div>
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-title">🔗 Зв'язки</div>
+      <div class="sidebar-title" data-i18n="ct.connections">🔗 Зв'язки</div>
       <div class="conn-row">
         <select id="connFrom"></select>
         <span style="font-size:.8rem;color:var(--muted)">→</span>
@@ -58,18 +58,18 @@
       <div class="input-group">
         <label>Тип зв'язку</label>
         <select id="connType">
-          <option value="parent">Батько/Мати</option>
-          <option value="child">Дитина</option>
-          <option value="partner">Партнер</option>
-          <option value="sibling">Брат/Сестра</option>
+          <option value="parent" data-i18n="ct.connTypeParent">Батько/Мати</option>
+          <option value="child" data-i18n="ct.connTypeChild">Дитина</option>
+          <option value="partner" data-i18n="ct.connTypePartner">Партнер</option>
+          <option value="sibling" data-i18n="ct.connTypeSibling">Брат/Сестра</option>
         </select>
       </div>
-      <button class="btn btn-primary" style="width:100%" id="btnAddConn">Додати зв'язок</button>
+      <button class="btn btn-primary" style="width:100%" id="btnAddConn" data-i18n="ct.addConn">Додати зв'язок</button>
       <div class="connection-list" id="connectionList" style="margin-top:12px"></div>
     </div>
 
     <div class="sidebar-section">
-      <div class="hint">💡 Перетягуйте картки на полотні. Клік на картку — відкриє детальний профіль.</div>
+      <div class="hint" data-i18n="ct.hint">💡 Перетягуйте картки на полотні. Клік на картку — відкриє детальний профіль.</div>
     </div>
   </aside>
 
@@ -78,7 +78,7 @@
     <div id="canvas">
       <div class="empty-hint" id="emptyHint">
         <div class="big">🌳</div>
-        <p>Додайте першого члена родини</p>
+        <p data-i18n="ct.emptyHint">Додайте першого члена родини</p>
       </div>
     </div>
     <div class="zoom-controls">
@@ -141,10 +141,10 @@
     </div>
 
     <div class="modal-tabs" id="modalTabs">
-      <button class="mtab active" data-tab="tab-general">📋 Загальні</button>
-      <button class="mtab" data-tab="tab-social">👔 Соц. статус</button>
-      <button class="mtab" data-tab="tab-education">🎓 Освіта</button>
-      <button class="mtab" data-tab="tab-notes">📝 Нотатки</button>
+      <button class="mtab active" data-tab="tab-general" data-i18n="ct.tabGeneral">📋 Загальні</button>
+      <button class="mtab" data-tab="tab-social" data-i18n="ct.tabSocial">👔 Соц. статус</button>
+      <button class="mtab" data-tab="tab-education" data-i18n="ct.tabEducation">🎓 Освіта</button>
+      <button class="mtab" data-tab="tab-notes" data-i18n="ct.tabNotes">📝 Нотатки</button>
     </div>
 
     <div class="mtab-content active" id="tab-general">
@@ -265,8 +265,8 @@
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-ghost" id="btnCancelModal">Скасувати</button>
-      <button class="btn btn-primary" id="btnSavePerson">Додати</button>
+      <button class="btn btn-ghost" id="btnCancelModal" data-i18n="ct.cancel">Скасувати</button>
+      <button class="btn btn-primary" id="btnSavePerson" data-i18n="ct.modalAdd">Додати</button>
     </div>
 
   </div>
