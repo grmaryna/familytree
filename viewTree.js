@@ -101,7 +101,6 @@ onAuthStateChanged(auth, async (user) => {
     connections = data.connections || [];
     document.getElementById('treeTitle').textContent = data.name || 'Сімейне дерево';
   } catch (e) {
-
     const local = localStorage.getItem('rodo-tree-local');
     if (local) {
       try {
@@ -115,6 +114,14 @@ onAuthStateChanged(auth, async (user) => {
 
   document.getElementById('loadingHint').style.display = 'none';
   renderAll();
+
+  setTimeout(() => {
+    console.group('[memoize] Статистика після першого рендеру');
+    console.log('initials:       ', initials.stats());
+    console.log('buildSvgPath:   ', buildSvgPath.stats());
+    console.log('getRelationsFor:', getRelationsFor.stats());
+    console.groupEnd();
+  }, 500);
 });
 
 function showEmpty() {

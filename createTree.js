@@ -70,6 +70,22 @@ const buildSvgPath = memoize(
   { maxSize: 200, policy: 'lru', ttl: 30_000 }
 );
 
+const photoCache = memoize(
+  (personId, photoBase64) => photoBase64,
+  {
+    maxSize: 20,
+    policy: 'custom',
+    evictWith: (cacheMap) => {
+      let maxLen = -1, maxKey = null;
+      for (const [k, entry] of cacheMap) {
+        const len = (entry.value || '').length;
+        if (len > maxLen) { maxLen = len; maxKey = k; }
+      }
+      return maxKey;
+    },
+  }
+);
+
 function getById(id) { return people.find(p => p.id === id); }
 
 document.getElementById('btnOpenModal') .addEventListener('click', openAddModal);
@@ -300,7 +316,9 @@ function savePerson() {
     notes: getVal('mNotes'), sources: getVal('mSources'), photo: photoData,
   };
   if (editingId !== null) {
-    Object.assign(getById(editingId), data);
+    const old = getById(editingId);
+    if (old && old.name !== name) initials.delete(old.name);
+    Object.assign(old, data);
     closeModal(); renderAll(); showProfilePanel(editingId);
   } else {
     const id = nextId++;
@@ -353,7 +371,7 @@ function renderConnections() {
     const nodeW = 150, nodeH = 86;
     const fx = from.x + nodeW / 2, fy = from.y + nodeH / 2;
     const tx = to.x   + nodeW / 2, ty = to.y   + nodeH / 2;
-    const d = buildSvgPath(fx, fy, tx, ty);  // мемоїзована з LRU + TTL
+    const d = buildSvgPath(fx, fy, tx, ty);
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', d);
     path.setAttribute('class', `conn-line ${conn.type}`);
@@ -369,7 +387,7 @@ function renderSidebar() {
   } else {
     people.forEach(p => {
       const item = document.createElement('div');
-      const years = p.birth ? (p.death ? `${p.birth}–${p.death}` : p.birth) : '';  // sidebar: скорочений формат
+      const years = p.birth ? (p.death ? `${p.birth}–${p.death}` : p.birth) : '';
       item.className = 'person-item' + (p.id === selectedId ? ' selected' : '');
       const avatarContent = p.photo ? `<img src="${p.photo}" alt=""/>` : initials(p.name);
       item.innerHTML = `
@@ -439,7 +457,7 @@ function showProfilePanel(id) {
   const p = getById(id);
   if (!p) return;
   document.getElementById('ppTitle').textContent = p.name;
-  const years = formatYears(p.birth, p.death);  // мемоїзована
+  const years = formatYears(p.birth, p.death);
   const photoHtml = p.photo
     ? `<div class="pp-photo"><img src="${p.photo}" alt=""/></div>`
     : `<div class="pp-photo" style="background:${p.gender === 'f' ? '#c97a5a' : '#5a8f6a'}">${initials(p.name)}</div>`;
@@ -447,7 +465,7 @@ function showProfilePanel(id) {
   const rels = getRelationsFor(id, connHash());
   const relsHtml = rels.length
     ? rels.map(r => `<div class="detail-rel-item">${r.label}: ${r.dir === 'to' ? '→' : '←'} ${r.name}</div>`).join('')
-    : `<div style="color:var(--muted);font-size:.8rem"> Немає зв'язків </div>`;
+    : `<div style="color:var(--muted);font-size:.8rem">Немає зв'язків</div>`;
 
   let html = `
     ${photoHtml}
@@ -473,7 +491,9 @@ function showProfilePanel(id) {
 function closeProfile() { document.getElementById('profilePanel').classList.remove('open'); }
 
 function deletePerson(id) {
-  people      = people.filter(p => p.id !== id);
+  const p = getById(id);
+  if (p) initials.delete(p.name);
+  people      = people.filter(person => person.id !== id);
   connections = connections.filter(c => c.from !== id && c.to !== id);
   if (selectedId === id) { selectedId = null; closeProfile(); }
   renderAll();
