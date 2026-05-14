@@ -13,8 +13,38 @@
   <a href="main.html" class="logo">Родо<span>від</span></a>
   <span class="tree-title" id="treeTitle">Завантаження…</span>
   <div class="topbar-actions">
+    <button class="btn btn-outline btn-sm" id="searchToggleBtn" onclick="toggleSearch()" title="Пошук (S)">🔍 Пошук</button>
     <a id="editBtn" href="#" class="btn btn-outline btn-sm">✏️ Редагувати</a>
     <a href="main.html" class="btn btn-primary btn-sm">🏠 Головна</a>
+  </div>
+</div>
+
+<div class="search-bar" id="searchBar">
+  <div class="search-fields">
+    <div class="search-field">
+      <label class="search-label">Ім'я</label>
+      <input class="search-input" id="sName"   type="text"   placeholder="Іван Петренко…" />
+    </div>
+    <div class="search-field">
+      <label class="search-label">Рік народження</label>
+      <input class="search-input" id="sBirth"  type="text"   placeholder="1965" maxlength="4"/>
+    </div>
+    <div class="search-field">
+      <label class="search-label">Рік смерті</label>
+      <input class="search-input" id="sDeath"  type="text"   placeholder="2020" maxlength="4"/>
+    </div>
+    <div class="search-field">
+      <label class="search-label">Стать</label>
+      <select class="search-input search-select" id="sGender">
+        <option value="">Усі</option>
+        <option value="m">Чоловіча</option>
+        <option value="f">Жіноча</option>
+      </select>
+    </div>
+    <div class="search-actions">
+      <button class="btn btn-primary btn-sm" id="searchClearBtn" onclick="clearSearch()">✕ Очистити</button>
+      <span class="search-count" id="searchCount"></span>
+    </div>
   </div>
 </div>
 

@@ -1,6 +1,8 @@
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { memoize } from "./memoize.js";
+import { memoize }         from "./memoize.js";
+import { PeopleSearcher }  from "./peopleSearch.js";
+import { runDemos }        from "./asyncFilter.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
@@ -63,7 +65,8 @@ const buildSvgPath = memoize(
   },
   { maxSize: 200, policy: 'lru', ttl: 30_000 }
 );
-function getById(id)    { return people.find(p => p.id === id); }
+
+function getById(id) { return people.find(p => p.id === id); }
 
 async function apiRequest(method, path) {
   const user  = auth.currentUser;
@@ -72,6 +75,97 @@ async function apiRequest(method, path) {
   const data  = await res.json();
   if (!res.ok) throw new Error(data.error);
   return data;
+}
+
+function applySearchHighlight(matchedIds) {
+  const countEl = document.getElementById('searchCount');
+  const nodes   = canvas.querySelectorAll('.node');
+
+  if (matchedIds === null) {
+    nodes.forEach(n => { n.classList.remove('search-match', 'search-dim'); });
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
+  const matchSet = new Set(matchedIds);
+
+  const peopleIds = people.map(p => p.id);
+
+  nodes.forEach((node, i) => {
+    const id = peopleIds[i];
+    if (matchSet.has(id)) {
+      node.classList.add('search-match');
+      node.classList.remove('search-dim');
+    } else {
+      node.classList.add('search-dim');
+      node.classList.remove('search-match');
+    }
+  });
+
+  if (countEl) {
+    countEl.textContent = matchedIds.length
+      ? `Знайдено: ${matchedIds.length}`
+      : 'Нічого не знайдено';
+  }
+}
+
+function triggerSearch() {
+  if (!searcher) return;
+  const query = {
+    name:   document.getElementById('sName')?.value   || '',
+    birth:  document.getElementById('sBirth')?.value  || '',
+    death:  document.getElementById('sDeath')?.value  || '',
+    gender: document.getElementById('sGender')?.value || '',
+  };
+
+  const isEmpty = !query.name && !query.birth && !query.death && !query.gender;
+  if (isEmpty) {
+    searcher.cancel();
+    applySearchHighlight(null);
+    return;
+  }
+
+  searcher.search(query);
+}
+
+function toggleSearch() {
+  const bar = document.getElementById('searchBar');
+  if (!bar) return;
+  bar.classList.toggle('open');
+  if (!bar.classList.contains('open')) {
+    clearSearch();
+  } else {
+    document.getElementById('sName')?.focus();
+  }
+}
+
+function initSearchUI() {
+  if (searcher) searcher.destroy();
+
+  searcher = new PeopleSearcher(people, {
+    debounce: 250,
+
+    onStart: (query) => {
+      const countEl = document.getElementById('searchCount');
+      if (countEl) countEl.textContent = 'Пошук…';
+    },
+
+    onResult: (results, query) => {
+      applySearchHighlight(results.map(p => p.id));
+    },
+
+    onError: (err) => {
+      if (err.name !== 'AbortError') {
+        console.error('[PeopleSearcher] помилка:', err);
+      }
+    },
+  });
+
+  ['sName', 'sBirth', 'sDeath', 'sGender'].forEach(id => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', triggerSearch);
+    el?.addEventListener('change', triggerSearch);
+  });
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -115,12 +209,16 @@ onAuthStateChanged(auth, async (user) => {
   document.getElementById('loadingHint').style.display = 'none';
   renderAll();
 
+  initSearchUI();
+
   setTimeout(() => {
     console.group('[memoize] Статистика після першого рендеру');
     console.log('initials:       ', initials.stats());
     console.log('buildSvgPath:   ', buildSvgPath.stats());
     console.log('getRelationsFor:', getRelationsFor.stats());
     console.groupEnd();
+
+    runDemos(people);
   }, 500);
 });
 
@@ -216,10 +314,24 @@ function zoom(delta) {
 }
 function resetView() { scale=1; canvas.style.transform=''; svgLines.style.transform=''; }
 
-window.zoom        = zoom;
-window.resetView   = resetView;
-window.closeDetail = closeDetail;
+window.zoom         = zoom;
+window.resetView    = resetView;
+window.closeDetail  = closeDetail;
+window.toggleSearch = toggleSearch;
+window.clearSearch  = clearSearch;
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDetail();
+  if (e.key === 'Escape') {
+    closeDetail();
+    const bar = document.getElementById('searchBar');
+    if (bar?.classList.contains('open')) {
+      bar.classList.remove('open');
+      clearSearch();
+    }
+  }
+  if (e.key === 's' && document.activeElement.tagName !== 'INPUT'
+                     && document.activeElement.tagName !== 'SELECT') {
+    e.preventDefault();
+    toggleSearch();
+  }
 });
