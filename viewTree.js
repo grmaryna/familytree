@@ -1,5 +1,6 @@
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { memoize } from "./memoize.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
@@ -10,7 +11,6 @@ const firebaseConfig = {
   appId: "1:304616447045:web:1b98da8b6a0481c65d572c"
 };
 
-// ─── Теми ────────────────────────────────────────────────────────────────────
 const themes = {
   forest: {'--bg':'#f5f0e8','--bg2':'#ede6d6','--green':'#3a6b4a','--green-light':'#5a8f6a','--green-pale':'#d4e8da','--brown':'#7a5c3a','--text':'#2c2218','--muted':'#7a6a55','--border':'#d8cdb8','--white':'#fff'},
   ocean:  {'--bg':'#e8f2f8','--bg2':'#d8eaf4','--green':'#2a6080','--green-light':'#3a80a8','--green-pale':'#c8e0ee','--brown':'#3a6878','--text':'#0f2a38','--muted':'#4a7088','--border':'#b8d4e4','--white':'#fff'},
@@ -30,7 +30,39 @@ let people = [], connections = [], scale = 1;
 const canvas   = document.getElementById('canvas');
 const svgLines = document.getElementById('svgLines');
 
-function initials(name) { return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+const initials = memoize(
+  (name) => (name || '').split(' ').map(w => w[0]).filter(Boolean)
+    .join('').toUpperCase().slice(0, 2) || '?',
+  { maxSize: 150, policy: 'lru' }
+);
+
+const getRelationsFor = memoize(
+  (personId, _connHash) => {
+    const labels = { parent:'Батько/Мати', child:'Дитина', partner:'Партнер', sibling:'Брат/Сестра' };
+    return connections
+      .filter(c => c.from === personId || c.to === personId)
+      .map(c => {
+        const otherId = c.from === personId ? c.to : c.from;
+        const other   = people.find(p => p.id === otherId);
+        if (!other) return null;
+        return { type: c.type, label: labels[c.type] || c.type, name: other.name, dir: c.from === personId ? 'to' : 'from' };
+      })
+      .filter(Boolean);
+  },
+  { maxSize: 50, policy: 'lfu' }
+);
+
+function connHash() {
+  return connections.length + '_' + connections.map(c => `${c.from}-${c.to}-${c.type}`).join(',');
+}
+
+const buildSvgPath = memoize(
+  (fx, fy, tx, ty) => {
+    const midY = (fy + ty) / 2;
+    return `M${fx},${fy} C${fx},${midY} ${tx},${midY} ${tx},${ty}`;
+  },
+  { maxSize: 200, policy: 'lru', ttl: 30_000 }
+);
 function getById(id)    { return people.find(p => p.id === id); }
 
 async function apiRequest(method, path) {
@@ -48,7 +80,6 @@ onAuthStateChanged(auth, async (user) => {
   const params = new URLSearchParams(window.location.search);
   const treeId = params.get('treeId');
 
-  // Оновлюємо посилання «Редагувати»
   if (treeId) {
     document.getElementById('editBtn').href = `createTree.html?treeId=${treeId}`;
   } else {
@@ -70,7 +101,7 @@ onAuthStateChanged(auth, async (user) => {
     connections = data.connections || [];
     document.getElementById('treeTitle').textContent = data.name || 'Сімейне дерево';
   } catch (e) {
-    // Fallback — локальне збереження
+
     const local = localStorage.getItem('rodo-tree-local');
     if (local) {
       try {
@@ -124,9 +155,8 @@ function renderConnections() {
     if (!from || !to) return;
     const fx = from.x + 70, fy = from.y + 40;
     const tx = to.x   + 70, ty = to.y   + 40;
-    const my = (fy + ty) / 2;
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d', `M${fx},${fy} C${fx},${my} ${tx},${my} ${tx},${ty}`);
+    path.setAttribute('d', buildSvgPath(fx, fy, tx, ty));
     path.setAttribute('class', 'conn-line ' + conn.type);
     svgLines.appendChild(path);
   });
@@ -145,7 +175,6 @@ function openDetail(id) {
   const years = p.birth ? (p.death ? p.birth + ' – ' + p.death : 'нар. ' + p.birth) : '';
   document.getElementById('detailYears').textContent = years;
 
-  // Зв'язки цієї людини
   const labels = { parent:'Батько/Мати', child:'Дитина', partner:'Партнер', sibling:'Брат/Сестра' };
   const rels = connections
     .filter(c => c.from === id || c.to === id)
