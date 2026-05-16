@@ -1,6 +1,5 @@
 export class EventEmitter {
   constructor() {
-    /** @type {Map<string, Set<Function>>} */
     this._listeners = new Map();
   }
 
@@ -53,6 +52,40 @@ export class EventEmitter {
   listenerCount(event) {
     return this._listeners.get(event)?.size ?? 0;
   }
+}
+export class Observable {
+
+  constructor(emitter, event) {
+    this._emitter = emitter;
+    this._event   = event;
+    this._ops     = [];
+  }
+
+  subscribe(observer) {
+    const ops = this._ops;
+ 
+    const handler = (payload) => {
+      let value = payload;
+      for (const op of ops) {
+        const result = op(value);
+        if (result === Observable._SKIP) return;
+        value = result;
+      }
+      try { observer(value); }
+      catch (err) { console.error('[Observable] Помилка в observer:', err); }
+    };
+ 
+    const unsubscribe = this._emitter.on(this._event, handler);
+    return { unsubscribe };
+  }
+
+  pipe(...operators) {
+    const next  = new Observable(this._emitter, this._event);
+    next._ops   = [...this._ops, ...operators];
+    return next;
+  }
+
+  static _SKIP = Symbol('Observable.SKIP');
 }
 
 export const map = (fn) => (value) => fn(value);
