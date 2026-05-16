@@ -1,8 +1,9 @@
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { initializeApp }      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { memoize }         from "./memoize.js";
-import { PeopleSearcher }  from "./peopleSearch.js";
-import { runDemos }        from "./asyncFilter.js";
+import { memoize }            from "./memoize.js";
+import { PeopleSearcher }     from "./peopleSearch.js";
+import { treeEvents }         from "./treeeventbus.js";
+import { initAllListeners }   from "./treelisteners.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCarNJC1uHCXM-Pi69XGx_UVq79w3czYPA",
@@ -21,14 +22,18 @@ const themes = {
   rose:   {'--bg':'#fdf0f0','--bg2':'#f5e2e2','--green':'#a04060','--green-light':'#c05070','--green-pale':'#fde0e8','--brown':'#8a4050','--text':'#280a14','--muted':'#8a4a58','--border':'#e0c0c8','--white':'#fff'},
   sand:   {'--bg':'#f5f0e0','--bg2':'#ede4cc','--green':'#7a6030','--green-light':'#9a7840','--green-pale':'#e8dfc0','--brown':'#6a5028','--text':'#28200c','--muted':'#7a6840','--border':'#d8c898','--white':'#fff'},
 };
-const saved = localStorage.getItem('rodo-theme');
-if (saved && themes[saved]) Object.entries(themes[saved]).forEach(([k,v]) => document.documentElement.style.setProperty(k,v));
+
+const savedTheme = localStorage.getItem('rodo-theme');
+if (savedTheme && themes[savedTheme])
+  Object.entries(themes[savedTheme]).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const BASE = 'http://localhost:4000/api';
 
 let people = [], connections = [], scale = 1;
+let unsubscribeListeners = null;
+
 const canvas   = document.getElementById('canvas');
 const svgLines = document.getElementById('svgLines');
 
@@ -37,26 +42,6 @@ const initials = memoize(
     .join('').toUpperCase().slice(0, 2) || '?',
   { maxSize: 150, policy: 'lru' }
 );
-
-const getRelationsFor = memoize(
-  (personId, _connHash) => {
-    const labels = { parent:'Батько/Мати', child:'Дитина', partner:'Партнер', sibling:'Брат/Сестра' };
-    return connections
-      .filter(c => c.from === personId || c.to === personId)
-      .map(c => {
-        const otherId = c.from === personId ? c.to : c.from;
-        const other   = people.find(p => p.id === otherId);
-        if (!other) return null;
-        return { type: c.type, label: labels[c.type] || c.type, name: other.name, dir: c.from === personId ? 'to' : 'from' };
-      })
-      .filter(Boolean);
-  },
-  { maxSize: 50, policy: 'lfu' }
-);
-
-function connHash() {
-  return connections.length + '_' + connections.map(c => `${c.from}-${c.to}-${c.type}`).join(',');
-}
 
 const buildSvgPath = memoize(
   (fx, fy, tx, ty) => {
@@ -77,36 +62,34 @@ async function apiRequest(method, path) {
   return data;
 }
 
-function applySearchHighlight(matchedIds) {
-  const countEl = document.getElementById('searchCount');
-  const nodes   = canvas.querySelectorAll('.node');
+let searcher = null;
 
-  if (matchedIds === null) {
-    nodes.forEach(n => { n.classList.remove('search-match', 'search-dim'); });
-    if (countEl) countEl.textContent = '';
-    return;
-  }
+function initSearchUI() {
+  if (searcher) searcher.destroy();
 
-  const matchSet = new Set(matchedIds);
-
-  const peopleIds = people.map(p => p.id);
-
-  nodes.forEach((node, i) => {
-    const id = peopleIds[i];
-    if (matchSet.has(id)) {
-      node.classList.add('search-match');
-      node.classList.remove('search-dim');
-    } else {
-      node.classList.add('search-dim');
-      node.classList.remove('search-match');
-    }
+  searcher = new PeopleSearcher(people, {
+    debounce: 250,
+    onStart: () => {
+      const el = document.getElementById('searchCount');
+      if (el) el.textContent = 'Пошук…';
+    },
+    onResult: (results, query) => {
+      treeEvents.emit('search:results', {
+        query,
+        results,
+        matchedIds: results.map(p => p.id),
+      });
+    },
+    onError: (err) => {
+      if (err.name !== 'AbortError') console.error('[PeopleSearcher]', err);
+    },
   });
 
-  if (countEl) {
-    countEl.textContent = matchedIds.length
-      ? `Знайдено: ${matchedIds.length}`
-      : 'Нічого не знайдено';
-  }
+  ['sName', 'sBirth', 'sDeath', 'sGender'].forEach(id => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input',  triggerSearch);
+    el?.addEventListener('change', triggerSearch);
+  });
 }
 
 function triggerSearch() {
@@ -117,14 +100,12 @@ function triggerSearch() {
     death:  document.getElementById('sDeath')?.value  || '',
     gender: document.getElementById('sGender')?.value || '',
   };
-
   const isEmpty = !query.name && !query.birth && !query.death && !query.gender;
   if (isEmpty) {
     searcher.cancel();
-    applySearchHighlight(null);
+    treeEvents.emit('search:cleared', {});
     return;
   }
-
   searcher.search(query);
 }
 
@@ -132,40 +113,19 @@ function toggleSearch() {
   const bar = document.getElementById('searchBar');
   if (!bar) return;
   bar.classList.toggle('open');
-  if (!bar.classList.contains('open')) {
-    clearSearch();
-  } else {
-    document.getElementById('sName')?.focus();
-  }
+  if (!bar.classList.contains('open')) clearSearch();
+  else document.getElementById('sName')?.focus();
 }
 
-function initSearchUI() {
-  if (searcher) searcher.destroy();
-
-  searcher = new PeopleSearcher(people, {
-    debounce: 250,
-
-    onStart: (query) => {
-      const countEl = document.getElementById('searchCount');
-      if (countEl) countEl.textContent = 'Пошук…';
-    },
-
-    onResult: (results, query) => {
-      applySearchHighlight(results.map(p => p.id));
-    },
-
-    onError: (err) => {
-      if (err.name !== 'AbortError') {
-        console.error('[PeopleSearcher] помилка:', err);
-      }
-    },
-  });
-
-  ['sName', 'sBirth', 'sDeath', 'sGender'].forEach(id => {
+function clearSearch() {
+  ['sName', 'sBirth', 'sDeath'].forEach(id => {
     const el = document.getElementById(id);
-    el?.addEventListener('input', triggerSearch);
-    el?.addEventListener('change', triggerSearch);
+    if (el) el.value = '';
   });
+  const sel = document.getElementById('sGender');
+  if (sel) sel.value = '';
+  searcher?.cancel();
+  treeEvents.emit('search:cleared', {});
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -174,11 +134,8 @@ onAuthStateChanged(auth, async (user) => {
   const params = new URLSearchParams(window.location.search);
   const treeId = params.get('treeId');
 
-  if (treeId) {
-    document.getElementById('editBtn').href = `createTree.html?treeId=${treeId}`;
-  } else {
-    document.getElementById('editBtn').href = 'createTree.html';
-  }
+  if (treeId) document.getElementById('editBtn').href = `createTree.html?treeId=${treeId}`;
+  else        document.getElementById('editBtn').href = 'createTree.html';
 
   try {
     let data;
@@ -208,18 +165,21 @@ onAuthStateChanged(auth, async (user) => {
 
   document.getElementById('loadingHint').style.display = 'none';
   renderAll();
-
   initSearchUI();
 
-  setTimeout(() => {
-    console.group('[memoize] Статистика після першого рендеру');
-    console.log('initials:       ', initials.stats());
-    console.log('buildSvgPath:   ', buildSvgPath.stats());
-    console.log('getRelationsFor:', getRelationsFor.stats());
-    console.groupEnd();
+  if (unsubscribeListeners) unsubscribeListeners();
 
-    runDemos(people);
-  }, 500);
+  const { unsubscribeAll } = initAllListeners({
+    initials,
+    getPeopleIds: () => people.map(p => p.id),
+  });
+  unsubscribeListeners = unsubscribeAll;
+
+  treeEvents.emit('tree:loaded', {
+    people,
+    connections,
+    name: document.getElementById('treeTitle').textContent,
+  });
 });
 
 function showEmpty() {
@@ -260,7 +220,7 @@ function renderConnections() {
     if (!from || !to) return;
     const fx = from.x + 70, fy = from.y + 40;
     const tx = to.x   + 70, ty = to.y   + 40;
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', buildSvgPath(fx, fy, tx, ty));
     path.setAttribute('class', 'conn-line ' + conn.type);
     svgLines.appendChild(path);
@@ -271,17 +231,8 @@ function openDetail(id) {
   const p = getById(id);
   if (!p) return;
 
-  const colors = { m: '#5a8f6a', f: '#c97a5a' };
-  const av = document.getElementById('detailAvatar');
-  av.textContent         = initials(p.name);
-  av.style.background    = colors[p.gender] || '#5a8f6a';
-
-  document.getElementById('detailName').textContent  = p.name;
-  const years = p.birth ? (p.death ? p.birth + ' – ' + p.death : 'нар. ' + p.birth) : '';
-  document.getElementById('detailYears').textContent = years;
-
   const labels = { parent:'Батько/Мати', child:'Дитина', partner:'Партнер', sibling:'Брат/Сестра' };
-  const rels = connections
+  const relsHtml = connections
     .filter(c => c.from === id || c.to === id)
     .map(c => {
       const otherId = c.from === id ? c.to : c.from;
@@ -293,26 +244,29 @@ function openDetail(id) {
     .filter(Boolean)
     .join('');
 
-  const relDiv = document.getElementById('detailRel');
-  if (rels) {
-    relDiv.innerHTML = `<div class="detail-rel-title">Зв'язки</div>${rels}`;
-  } else {
-    relDiv.innerHTML = '<div style="color:var(--muted);font-size:.8rem">Немає зв\'язків</div>';
-  }
-
-  document.getElementById('detailPanel').classList.add('open');
+  treeEvents.emit('person:selected', {
+    person: {
+      ...p,
+      _relsHtml: relsHtml
+        ? `<div class="detail-rel-title">Зв'язки</div>${relsHtml}`
+        : null,
+    }
+  });
 }
 
-function closeDetail() { document.getElementById('detailPanel').classList.remove('open'); }
+function closeDetail() {
+  treeEvents.emit('person:deselected', {});
+}
 
 function zoom(delta) {
   scale = Math.min(2, Math.max(0.3, scale + delta));
-  canvas.style.transform         = `scale(${scale})`;
-  canvas.style.transformOrigin   = '0 0';
-  svgLines.style.transform       = `scale(${scale})`;
-  svgLines.style.transformOrigin = '0 0';
+  treeEvents.emit('zoom:changed', { scale });
 }
-function resetView() { scale=1; canvas.style.transform=''; svgLines.style.transform=''; }
+
+function resetView() {
+  scale = 1;
+  treeEvents.emit('zoom:reset', {});
+}
 
 window.zoom         = zoom;
 window.resetView    = resetView;
