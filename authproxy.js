@@ -1,6 +1,18 @@
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const BASE_URL = 'http://localhost:4000/api';
+const MAX_RPS  = 10;
+
+const _timestamps = [];
+
+function _checkRateLimit() {
+  const now = Date.now();
+  while (_timestamps.length && _timestamps[0] <= now - 1000) _timestamps.shift();
+  if (_timestamps.length >= MAX_RPS) {
+    throw new Error(`Rate limit: не більше ${MAX_RPS} запитів/сек`);
+  }
+  _timestamps.push(now);
+}
 
 async function _getJwtHeaders(force = false) {
   const user = getAuth().currentUser;
@@ -10,22 +22,18 @@ async function _getJwtHeaders(force = false) {
 }
 
 export async function request(method, path, body = null, opts = {}) {
+  _checkRateLimit();
   return _doRequest(method, path, body, opts, false);
 }
 
 async function _doRequest(method, path, body, opts, isRetry) {
   const authHeaders = await _getJwtHeaders(isRetry);
-
-  const headers   = { 'Content-Type': 'application/json', ...authHeaders, ...(opts.headers || {}) };
-  const fetchOpts = { method, headers, ...opts };
+  const headers     = { 'Content-Type': 'application/json', ...authHeaders, ...(opts.headers || {}) };
+  const fetchOpts   = { method, headers, ...opts };
   if (body !== null) fetchOpts.body = JSON.stringify(body);
 
   const res = await fetch(BASE_URL + path, fetchOpts);
-
-  if (res.status === 401 && !isRetry) {
-    return _doRequest(method, path, body, opts, true);
-  }
-
+  if (res.status === 401 && !isRetry) return _doRequest(method, path, body, opts, true);
   if (res.status === 204) return null;
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
@@ -33,19 +41,19 @@ async function _doRequest(method, path, body, opts, isRetry) {
 }
 
 export async function requestStream(method, path, rawBody = null, extraHeaders = {}) {
+  _checkRateLimit();
+
   const authHeaders = await _getJwtHeaders();
   const headers     = { ...authHeaders, ...extraHeaders };
   const fetchOpts   = { method, headers };
   if (rawBody !== null) fetchOpts.body = rawBody;
 
   const res = await fetch(BASE_URL + path, fetchOpts);
-
   if (res.status === 401) {
     const freshHeaders = await _getJwtHeaders(true);
     const retryOpts    = { method, headers: { ...freshHeaders, ...extraHeaders } };
     if (rawBody !== null) retryOpts.body = rawBody;
     return fetch(BASE_URL + path, retryOpts);
   }
-
   return res;
 }
