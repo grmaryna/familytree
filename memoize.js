@@ -97,21 +97,21 @@ export function memoize(fn, {
 
   memoized.cache     = cache;
   memoized.clear     = () => cache.clear();
-  memoized.delete    = (key) => cache.delete(JSON.stringify(key));
+  memoized.delete    = (key) => cache.delete(JSON.stringify([key]));
   memoized.stopSweep = () => clearInterval(sweepTimer);
   memoized.stats     = () => ({
-    size:      cache.size,
+    size:    cache.size,
     maxSize,
     policy,
-    ttl:       ttl === Infinity ? '∞' : `${ttl}ms`,
+    ttl:     ttl === Infinity ? '∞' : `${ttl}ms`,
     hits, misses, evictions, expired,
-    hitRate:   hits + misses === 0 ? '—' : `${(hits / (hits + misses) * 100).toFixed(1)}%`,
+    hitRate: hits + misses === 0 ? '—' : `${(hits / (hits + misses) * 100).toFixed(1)}%`,
   });
 
   return memoized;
 }
 
-import { memoize } from './memoize.js';
+// ─── Готові утиліти (використовують memoize вище, без self-import) ────────────
 
 export const initials = memoize(
   (name) => (name || '').split(' ').map(w => w[0]).filter(Boolean)
@@ -155,8 +155,8 @@ export const getRelationsFor = memoize(
 export const photoCache = memoize(
   (personId, photoData) => photoData,
   {
-    maxSize:  20,
-    policy:   'custom',
+    maxSize:   20,
+    policy:    'custom',
     evictWith: (cacheMap) => {
       let maxLen = -1, maxKey = null;
       for (const [k, entry] of cacheMap) {
@@ -164,36 +164,6 @@ export const photoCache = memoize(
         if (len > maxLen) { maxLen = len; maxKey = k; }
       }
       return maxKey;
-    }
+    },
   }
 );
-
-const fakePhoto = (id, size) => 'x'.repeat(size);
-const pc = memoize(
-  (id, data) => data,
-  {
-    maxSize:   3,
-    policy:    'custom',
-    evictWith: (m) => {
-      let maxLen = -1, maxKey = null;
-      for (const [k, e] of m) {
-        if ((e.value||'').length > maxLen) { maxLen = (e.value||'').length; maxKey = k; }
-      }
-      return maxKey;
-    }
-  }
-);
-
-pc(1, fakePhoto(1, 500));
-pc(2, fakePhoto(2, 1200));
-pc(3, fakePhoto(3, 300));
-pc(4, fakePhoto(4, 800));
-
-const remaining = [...pc.cache.keys()].map(k => JSON.parse(k)[0]);
-console.log('Залишилось у кеші (id):', remaining);
-
-console.log('\n=== Статистика всіх кешів ===');
-console.log('initials:      ', initials.stats());
-console.log('formatYears:   ', formatYears.stats());
-console.log('buildSvgPath:  ', buildSvgPath.stats());
-console.log('getRelationsFor:', getRelationsFor.stats());
