@@ -1,16 +1,7 @@
-/**
- * api.js — клієнтський хелпер для роботи з бекендом
- * Підключай у будь-якому JS файлі:
- *   import { api } from './api.js';
- */
-
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const BASE_URL = 'http://localhost:4000/api';
 
-/**
- * Надсилає запит до бекенду з Firebase токеном у заголовку.
- */
 async function request(method, path, body = null) {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -39,17 +30,15 @@ async function request(method, path, body = null) {
   return data;
 }
 
-// ─── API методи ───────────────────────────────────────────────────────────────
+import { request } from './authproxy.js';
 
 export const api = {
-  // Профіль
-  getMe:        ()           => request('GET',   '/me'),
-  updateMe:     (data)       => request('PATCH',  '/me', data),
+  getMe:      ()         => request('GET',    '/me'),
+  updateMe:   (data)     => request('PATCH',  '/me', data),
 
-  // Дерева
-  getTrees:     ()           => request('GET',   '/trees'),
-  createTree:   (name)       => request('POST',  '/trees', { name }),
-  getTree:      (id)         => request('GET',   `/trees/${id}`),
-  saveTree:     (id, data)   => request('PUT',   `/trees/${id}`, data),
-  deleteTree:   (id)         => request('DELETE', `/trees/${id}`),
+  getTrees:   ()         => request('GET',    '/trees'),
+  createTree: (name)     => request('POST',   '/trees', { name }),
+  getTree:    (id)       => request('GET',    `/trees/${id}`),
+  saveTree:   (id, data) => request('PUT',    `/trees/${id}`, data),
+  deleteTree: (id)       => request('DELETE', `/trees/${id}`),
 };
